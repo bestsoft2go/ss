@@ -1,0 +1,469 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="../css/book.css" type="text/css" />
+</head>
+<body>
+<div id="header_wrap">
+  <h1><a href="book.htm">開放電腦計畫 -- 系統程式</a><BR/><sub>(使用 JavaScript 實作)</sub></h1>
+  <table id="bar" border="0" style="border:0;"><tr style="border:0;">
+    <td style="text-align:left;border:0;"> <a href="book.html">目錄</a> | <a href="download.html">下載</a></td>
+    <td style="text-align:right;border:0;"><a href="http://ccckmit.wikidot.com/">陳鍾誠</a> 於 <a href="http://www.nqu.edu.tw/">金門大學</a></td>
+  </tr></table>
+</div>
+<div id="content">
+<div id="TOC">
+<ul>
+<li><a href="#組譯器---as0">組譯器 - as0</a><ul>
+<li><a href="#組譯範例">組譯範例</a></li>
+<li><a href="#as0-組譯器設計">AS0 組譯器設計</a></li>
+<li><a href="#程式說明">程式說明</a></li>
+<li><a href="#結語">結語</a></li>
+</ul></li>
+</ul>
+</div>
+<h1 id="組譯器---as0"><a href="#組譯器---as0">組譯器 - as0</a></h1>
+<p>在前面幾章，我們介紹了開放電腦計畫中的「處理器」 -- 包含 CPU0 的結構、指令集與編碼方式。 在本章中，我們將為 CPU0 設計一個組譯器 AS0，以便能更深入理解 CPU0 的結構，並瞭解 組譯器的設計原理。</p>
+<h2 id="組譯範例"><a href="#組譯範例">組譯範例</a></h2>
+<p>讓我們先用範例導向的方式，先看看一個 CPU0 的組合語言程式，如下所示：</p>
+<p>組合語言：sum.as0</p>
+<pre><code>        LD     R1, sum      ; R1 = sum = 0
+        LD     R2, i        ; R2 = i = 1
+        LDI    R3, 10       ; R3 = 10
+FOR:    CMP    R2, R3       ; if (R2 &gt; R3)
+        JGT    EXIT         ;   goto EXIT
+        ADD    R1, R1, R2   ; R1 = R1 + R2 (sum = sum + i)
+        ADDI   R2, R2, 1    ; R2 = R2 + 1  ( i  = i + 1)
+        JMP    FOR          ; goto FOR
+EXIT:   ST     R1, sum      ; sum = R1
+        ST     R2, i        ; i = R2
+        LD     R9, msgptr   ; R9= pointer(msg) = &amp;msg
+        SWI    3            ; SWI 3 : print string &amp;msg
+        MOV    R9, R1       ; R9 = R1 = sum
+        SWI    2            ; SWI 2 : print number sum
+        RET                 ; return to CALLER
+i:      RESW    1           ; int i
+sum:    WORD    0           ; int sum=0
+msg:    BYTE    &quot;sum=&quot;, 0   ; char *msg = &quot;sum=&quot;
+msgptr: WORD    msg         ; char &amp;msgptr = &amp;msg</code></pre>
+<p>上述程式是一個可以計算 1+2+....+10 之結果的程式，最後會透過軟體中斷 (SWI, Software Interrupt) 的方式， 印出訊息到螢幕畫面上，以下是利用我們寫的組譯器 AS0 對上述程式進行組譯的過程：</p>
+<pre><code>D:\oc\code&gt;node as0 sum.as0 sum.ob0
+Assembler:asmFile=sum.as0 objFile=sum.ob0
+===============Assemble=============
+[ &#39;        LD     R1, sum      ; R1 = sum = 0&#39;,
+  &#39;        LD     R2, i        ; R2 = i = 1&#39;,
+  &#39;        LDI    R3, 10       ; R3 = 10&#39;,
+  &#39;FOR:    CMP    R2, R3       ; if (R2 &gt; R3)&#39;,
+  &#39;        JGT    EXIT         ;   goto EXIT&#39;,
+  &#39;        ADD    R1, R1, R2   ; R1 = R1 + R2 (sum = sum + i)&#39;,
+  &#39;        ADDI   R2, R2, 1    ; R2 = R2 + 1  ( i  = i + 1)&#39;,
+  &#39;        JMP    FOR          ; goto FOR&#39;,
+  &#39;EXIT:   ST     R1, sum      ; sum = R1&#39;,
+  &#39;        ST     R2, i        ; i = R2&#39;,
+  &#39;        LD     R9, msgptr   ; R9= pointer(msg) = &amp;msg&#39;,
+  &#39;        SWI    3            ; SWI 3 : 印出 R9 (=&amp;msg) 中的字串&#39;,
+  &#39;        MOV    R9, R1       ; R9 = R1 = sum&#39;,
+  &#39;        SWI    4            ; SWI 2 : 印出 R9 (=R1=sum) 中的整數&#39;,
+  &#39;        RET                 ; return 返回上一層呼叫函數&#39;,
+  &#39;i:      RESW   1            ; int i&#39;,
+  &#39;sum:    WORD   0            ; int sum=0&#39;,
+  &#39;msg:    BYTE   &quot;1+...+10=&quot;, 0   ; char *msg = &quot;sum=&quot;&#39;,
+  &#39;msgptr: WORD   msg          ; char &amp;msgptr = &amp;msg&#39; ]
+=================PASS1================
+0000          LD       R1,sum           L 00
+0004          LD       R2,i             L 00
+0008          LDI      R3,10            L 08
+000C FOR      CMP      R2,R3            A 10
+0010          JGT      EXIT             J 23
+0014          ADD      R1,R1,R2         A 13
+0018          ADDI     R2,R2,1          A 1B
+001C          JMP      FOR              J 26
+0020 EXIT     ST       R1,sum           L 01
+0024          ST       R2,i             L 01
+0028          LD       R9,msgptr        L 00
+002C          SWI      3                J 2A
+0030          MOV      R9,R1            A 12
+0034          SWI      4                J 2A
+0038          RET                       J 2C
+003C i        RESW     1                D F0
+0040 sum      WORD     0                D F2
+0044 msg      BYTE     &quot;1+...+10=&quot;,0    D F3
+004E msgptr   WORD     msg              D F2
+===============SYMBOL TABLE=========
+FOR      000C
+EXIT     0020
+i        003C
+sum      0040
+msg      0044
+msgptr   004E
+=============PASS2==============
+0000          LD       R1,sum           L 00 001F003C
+0004          LD       R2,i             L 00 002F0034
+0008          LDI      R3,10            L 08 0830000A
+000C FOR      CMP      R2,R3            A 10 10230000
+0010          JGT      EXIT             J 23 2300000C
+0014          ADD      R1,R1,R2         A 13 13112000
+0018          ADDI     R2,R2,1          A 1B 1B220001
+001C          JMP      FOR              J 26 26FFFFEC
+0020 EXIT     ST       R1,sum           L 01 011F001C
+0024          ST       R2,i             L 01 012F0014
+0028          LD       R9,msgptr        L 00 009F0022
+002C          SWI      3                J 2A 2A000003
+0030          MOV      R9,R1            A 12 12910000
+0034          SWI      4                J 2A 2A000004
+0038          RET                       J 2C 2C000000
+003C i        RESW     1                D F0 00000000
+0040 sum      WORD     0                D F2 00000000
+0044 msg      BYTE     &quot;1+...+10=&quot;,0    D F3 312B2E2E2E2B31303D00
+004E msgptr   WORD     msg              D F2 00000044
+=================SAVE OBJ FILE================
+
+00 :  001F003C 002F0034 0830000A 10230000
+10 :  2300000C 13112000 1B220001 26FFFFEC
+20 :  011F001C 012F0014 009F0022 2A000003
+30 :  12910000 2A000004 2C000000 00000000
+40 :  00000000 312B2E2E 2E2B3130 3D000000
+50 :  0044</code></pre>
+<p>當您組譯完成之後，就可以利用開放電腦計畫中的虛擬機 VM0 執行 AS0 所輸出的目的檔 sum.ob0， 其執行過程如下：</p>
+<pre><code>D:\oc\code&gt;node vm0 sum.ob0
+1+...+10=55</code></pre>
+<h2 id="as0-組譯器設計"><a href="#as0-組譯器設計">AS0 組譯器設計</a></h2>
+<p>組譯器的設計，通常採用兩階段的編碼方式，第一階段 (PASS1) 先計算出每個指令的位址，並記住所有標記符號的位址。 然後在第二階段 (PASS2) 才真正將指令轉換為機器碼輸出，在以下 AS0 組譯器的設計當中，我們就採用了這種兩階段的 處理方式。</p>
+<p>為了讓組譯器能夠容易修改與移植，我們將一般組譯器都會有的基礎結構 (抽象的組譯器物件) 放在 as.js 這個程式模組當中， 然後將與 CPU0 有關的部分放在 as0.js 這個實作模組當中，以下先列出 as.js 這個抽象物件模組。</p>
+<p>檔案：as.js (抽象組譯器物件)</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> fs = <span class="fu">require</span>(<span class="st">&quot;fs&quot;</span>); <span class="co">// 引用檔案函式庫</span>
+<span class="kw">var</span> c = <span class="fu">require</span>(<span class="st">&quot;./ccc&quot;</span>); <span class="co">// 引用基本函式庫 ccc.js</span>
+<span class="kw">var</span> Memory = <span class="fu">require</span>(<span class="st">&quot;./memory&quot;</span>); <span class="co">// 引用記憶體物件 memory.js</span>
+
+<span class="kw">var</span> as = <span class="kw">function</span>(opTable) { <span class="co">// 抽象組譯器物件</span>
+ <span class="kw">this</span>.<span class="fu">opTable</span> = opTable; <span class="co">// 取得指令表 opTable</span>
+
+ <span class="kw">this</span>.<span class="fu">assemble</span> = <span class="kw">function</span>(asmFile, objFile) { <span class="co">// 組譯器的主要函數</span>
+  <span class="kw">this</span>.<span class="fu">lines</span> = []; <span class="kw">this</span>.<span class="fu">codes</span> = []; <span class="co">// 設定程式碼行 (lines)，指令陣列 (codes)</span>
+  <span class="kw">this</span>.<span class="fu">symTable</span> = {}; <span class="co">// 建立空的符號表 (symTable)</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;Assembler:asmFile=%s objFile=%s&quot;</span>, asmFile, objFile); <span class="co">// 輸入組合語言、輸出目的檔</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;===============Assemble=============&quot;</span>);
+  <span class="kw">var</span> text = <span class="ot">fs</span>.<span class="fu">readFileSync</span>(asmFile, <span class="st">&quot;utf8&quot;</span>); <span class="co">// 讀取檔案到 text 字串中</span>
+  <span class="kw">this</span>.<span class="fu">lines</span> = <span class="ot">text</span>.<span class="fu">split</span>(<span class="ot">/</span><span class="bn">[</span><span class="fl">\r\n</span><span class="bn">]</span><span class="fl">+</span><span class="ot">/</span>); <span class="co">// 將組合語言分割成一行一行</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="kw">this</span>.<span class="fu">lines</span>); <span class="co">// 印出組合語言以便觀察</span>
+  <span class="kw">this</span>.<span class="fu">pass1</span>(); <span class="co">// 第一階段：計算位址</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;===============SYMBOL TABLE=========&quot;</span>);
+  <span class="kw">for</span> (s <span class="kw">in</span> <span class="kw">this</span>.<span class="fu">symTable</span>) { <span class="co">// 印出符號表以便觀察</span>
+    <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;%s %s&quot;</span>, <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39; &#39;</span>,s,<span class="dv">8</span>), <span class="ot">c</span>.<span class="fu">hex</span>(<span class="kw">this</span>.<span class="fu">symTable</span>[s].<span class="fu">address</span>, <span class="dv">4</span>));
+  }
+  <span class="kw">this</span>.<span class="fu">pass2</span>(); <span class="co">// 第二階段：建構目的碼</span>
+  <span class="kw">this</span>.<span class="fu">saveObjFile</span>(objFile); <span class="co">// 輸出目的檔</span>
+ }
+
+ <span class="kw">this</span>.<span class="fu">pass1</span> = <span class="kw">function</span>() { <span class="co">// 第一階段的組譯</span>
+  <span class="kw">var</span> address = <span class="dv">0</span>;  <span class="co">// 程式計數器 PC 的起始位址為 0</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;=================PASS1================&quot;</span>);
+  <span class="kw">for</span> (<span class="kw">var</span> i <span class="kw">in</span> <span class="kw">this</span>.<span class="fu">lines</span>) { <span class="co">// 對於每一行</span>
+    <span class="kw">try</span> {
+      <span class="kw">var</span> code = <span class="kw">this</span>.<span class="fu">parse</span>(<span class="kw">this</span>.<span class="fu">lines</span>[i]); <span class="co">// 剖析並建立 code 物件</span>
+      <span class="ot">code</span>.<span class="fu">address</span> = address; <span class="co">// 設定該行的位址</span>
+      <span class="kw">if</span> (<span class="ot">code</span>.<span class="ot">label</span>.<span class="fu">length</span> != <span class="dv">0</span>) { <span class="co">// 如果有標記符號</span>
+        <span class="kw">this</span>.<span class="fu">symTable</span>[<span class="ot">code</span>.<span class="fu">label</span>] = code; <span class="co">// 加入符號表中</span>
+      }
+      <span class="kw">this</span>.<span class="ot">codes</span>.<span class="fu">push</span>(code); <span class="co">// 將剖析完成的指令放入陣列中</span>
+      <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;%s&quot;</span>, code); <span class="co">// 印出指令物件</span>
+      address += <span class="kw">this</span>.<span class="fu">size</span>(code); <span class="co">//  計算下一個指令位址</span>
+    } <span class="kw">catch</span> (err) { <span class="co">// 語法有錯，印出錯誤的行號與內容</span>
+      <span class="ot">c</span>.<span class="fu">error</span>(<span class="ot">c</span>.<span class="fu">format</span>(<span class="st">&quot;line %d : %s&quot;</span>, i, <span class="kw">this</span>.<span class="fu">lines</span>[i]), err);
+    }
+  }
+ }
+
+ <span class="kw">this</span>.<span class="fu">pass2</span> = <span class="kw">function</span>(codes) { <span class="co">// 組譯器的第二階段</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;=============PASS2==============&quot;</span>);
+  <span class="kw">for</span> (<span class="kw">var</span> i <span class="kw">in</span> <span class="kw">this</span>.<span class="fu">codes</span>) { <span class="co">// 對每一個指令</span>
+    <span class="kw">try</span> {
+      <span class="kw">this</span>.<span class="fu">translate</span>(<span class="kw">this</span>.<span class="fu">codes</span>[i]); <span class="co">// 將組合語言指令翻譯成機器碼</span>
+      <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;%s&quot;</span>, <span class="kw">this</span>.<span class="fu">codes</span>[i]); <span class="co">// 印出指令物件 (含組合語言與機器碼)</span>
+    } <span class="kw">catch</span> (err) { <span class="co">// 語法有錯，印出錯誤的行號與內容</span>
+      <span class="ot">c</span>.<span class="fu">error</span>(<span class="ot">c</span>.<span class="fu">format</span>(<span class="st">&quot;line %d : %s&quot;</span>, i, <span class="kw">this</span>.<span class="fu">lines</span>[i]), err);
+    }
+  }
+ }
+ 
+ <span class="kw">this</span>.<span class="fu">saveObjFile</span> = <span class="kw">function</span>(objFile) { <span class="co">// 儲存目的檔</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;=================SAVE OBJ FILE================&quot;</span>);
+  <span class="kw">var</span> obj = <span class="st">&quot;&quot;</span>; <span class="co">// obj 為目的檔的 16 進位字串，初始化為空字串</span>
+  <span class="kw">for</span> (<span class="kw">var</span> i <span class="kw">in</span> <span class="kw">this</span>.<span class="fu">codes</span>) <span class="co">// 對於每個指令</span>
+    obj += <span class="kw">this</span>.<span class="fu">codes</span>[i].<span class="fu">obj</span>; <span class="co">// 都將目的碼加入 obj 字串中。</span>
+  <span class="kw">var</span> m = <span class="kw">new</span> <span class="fu">Memory</span>(<span class="dv">1</span>); <span class="co">// Memory 物件，用來將 16 進位目的碼轉為 2 進位儲存。</span>
+  <span class="ot">m</span>.<span class="fu">loadhex</span>(obj); <span class="co">// 將 16 進位目的碼載入記憶體</span>
+  <span class="ot">m</span>.<span class="fu">dump</span>(); <span class="co">// 輸出記憶體內容</span>
+  <span class="ot">m</span>.<span class="fu">save</span>(objFile); <span class="co">// 將記憶體內容除存到目的檔 objFile 中。</span>
+ }
+
+ <span class="kw">this</span>.<span class="fu">size</span> = <span class="kw">function</span>(code) { <span class="co">// 計算指令所佔空間大小，在 pass1() 當中會呼叫此函數</span>
+    <span class="kw">var</span> len = <span class="dv">0</span>, unitSize = <span class="dv">1</span>; <span class="co">// len: 指令大小 , unitSize:每單位大小 (BYTE=1, WORD=4)</span>
+    <span class="kw">switch</span> (<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">name</span>) { <span class="co">// 根據運算碼 op</span>
+      <span class="kw">case</span> <span class="st">&quot;RESW&quot;</span> : <span class="kw">return</span> <span class="dv">4</span> * <span class="fu">parseInt</span>(<span class="ot">code</span>.<span class="fu">args</span>[<span class="dv">0</span>]);  <span class="co">// 如果是 RESW, 大小為 4*保留量(參數 0)</span>
+      <span class="kw">case</span> <span class="st">&quot;RESB&quot;</span> : <span class="kw">return</span> <span class="dv">1</span> * <span class="fu">parseInt</span>(<span class="ot">code</span>.<span class="fu">args</span>[<span class="dv">0</span>]);  <span class="co">// 如果是 RESB, 大小為 1*保留量(參數 0)</span>
+      <span class="kw">case</span> <span class="st">&quot;WORD&quot;</span> : unitSize = <span class="dv">4</span>; <span class="co">// 沒有 break，繼續執行到 BYTE 部分的程式 (共用)</span>
+      <span class="kw">case</span> <span class="st">&quot;BYTE&quot;</span> : <span class="co">// 如果是BYTE, 大小是 1*參數個數 </span>
+        <span class="kw">for</span> (i <span class="kw">in</span> <span class="ot">code</span>.<span class="fu">args</span>) { <span class="co">// 對於 BYTE 或 WORD 中的每個元素</span>
+          <span class="kw">if</span> (<span class="ot">code</span>.<span class="fu">args</span>[i].<span class="fu">match</span>(<span class="ot">/</span><span class="fl">^\&quot;</span><span class="ot">.</span><span class="fl">*?\&quot;$</span><span class="ot">/</span>)) <span class="co">// 如果是字串，像 &quot;Hello!&quot;</span>
+            len += (<span class="ot">code</span>.<span class="fu">args</span>[i].<span class="fu">length</span> - <span class="dv">2</span>) * unitSize; <span class="co">// 則大小為 unitSize*字串長度</span>
+          <span class="kw">else</span> <span class="co">// 否則 大小就是 unitSize (BYTE=1, WORD=4)</span>
+            len += unitSize;
+        }
+        <span class="kw">return</span> len;
+      <span class="kw">case</span> <span class="st">&quot;&quot;</span> : <span class="kw">return</span> <span class="dv">0</span>; <span class="co">// 如果只是標記, 大小為 0</span>
+      <span class="kw">default</span> : <span class="kw">return</span> <span class="dv">4</span>; <span class="co">// 其他情形 (指令), 大小為 4</span>
+    }
+ }  
+}
+
+<span class="ot">module</span>.<span class="fu">exports</span> = as; <span class="co">// 匯出「抽象組譯器物件 as 」</span></code></pre>
+<p>請注意，as.js 模組缺少 parse(), translate() 等函數，由於這兩個函數是與 CPU0 設計有關的部分，因此定義在後續的 as0.js 當中</p>
+<p>註：雖然上述程式中的 size() 函數也可能會與 CPU 的設計有關，但是對於 32 bit 的 CPU 而言，可以通用，因此我們 將此函數放在上層的 as.js 當中，如果要定義非 32 位元 CPU、或者重新定義組合語言的語法時，可以覆寫掉這個 size() 函數。</p>
+<p>在上述程式中，我們用到了一個 code 物件，以下是該物件之定義模組 code.js 的原始碼：</p>
+<p>檔案：code.js (指令物件)</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> c = <span class="fu">require</span>(<span class="st">&quot;./ccc&quot;</span>); <span class="co">// 引用基本函式庫 ccc.js</span>
+
+<span class="kw">var</span> code = <span class="kw">function</span>(line, opTable) { <span class="co">// 指令物件 code</span>
+  <span class="kw">this</span>.<span class="fu">parseR</span> = <span class="kw">function</span>(str) { <span class="co">// 剖析暫存器參數 Ra，例如 parse(&#39;R3&#39;) = 3</span>
+    <span class="kw">var</span> rmatch = <span class="ot">/R</span><span class="fl">(</span><span class="bn">\d</span><span class="fl">+)</span><span class="ot">/</span>.<span class="fu">exec</span>(str); <span class="co">// 比對取出 Ra 中的數字</span>
+    <span class="kw">if</span> (rmatch == <span class="kw">null</span>) <span class="co">// 如果比對失敗，則傳回 NaN</span>
+      <span class="kw">return</span> <span class="kw">NaN</span>;
+    <span class="kw">return</span> <span class="fu">parseInt</span>(rmatch[<span class="dv">1</span>]); <span class="co">// 否則傳回暫存器代號 (數字)</span>
+  }
+
+  <span class="kw">this</span>.<span class="fu">toString</span> = <span class="kw">function</span>() { <span class="co">// 輸出格式化後的指令</span>
+    <span class="kw">return</span> <span class="ot">c</span>.<span class="fu">format</span>(<span class="st">&quot;%s %s %s %s %s %s %s&quot;</span>, <span class="ot">c</span>.<span class="fu">hex</span>(<span class="kw">this</span>.<span class="fu">address</span>, <span class="dv">4</span>), 
+      <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39; &#39;</span>,<span class="kw">this</span>.<span class="fu">label</span>,<span class="dv">8</span>), <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39; &#39;</span>,<span class="kw">this</span>.<span class="ot">op</span>.<span class="fu">name</span>, <span class="dv">8</span>), 
+      <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39; &#39;</span>,<span class="kw">this</span>.<span class="fu">args</span>, <span class="dv">16</span>), <span class="kw">this</span>.<span class="ot">op</span>.<span class="fu">type</span>, <span class="ot">c</span>.<span class="fu">hex</span>(<span class="kw">this</span>.<span class="ot">op</span>.<span class="fu">id</span>,<span class="dv">2</span>), <span class="kw">this</span>.<span class="fu">obj</span>);
+  }
+  
+  <span class="kw">var</span> labCmd = <span class="ot">/</span><span class="fl">^((</span><span class="bn">\w</span><span class="fl">+)</span><span class="ot">:</span><span class="fl">)?</span><span class="bn">\s</span><span class="fl">*(</span><span class="bn">[</span><span class="fl">^</span><span class="bn">;]</span><span class="fl">*)</span><span class="ot">/</span>; <span class="co">// 指令的語法</span>
+  <span class="kw">var</span> parts  = <span class="ot">labCmd</span>.<span class="fu">exec</span>(line); <span class="co">// 分割出標記與命令</span>
+  <span class="kw">var</span> tokens = parts[<span class="dv">3</span>].<span class="fu">trim</span>().<span class="fu">split</span>(<span class="ot">/</span><span class="bn">[ ,</span><span class="fl">\t\r</span><span class="bn">]</span><span class="fl">+</span><span class="ot">/</span>); <span class="co">// 將命令分割成基本單元</span>
+  <span class="kw">var</span> opName = tokens[<span class="dv">0</span>]; <span class="co">// 取出指令名稱</span>
+  
+  <span class="kw">this</span>.<span class="fu">label</span> = <span class="ot">c</span>.<span class="fu">nonull</span>(parts[<span class="dv">2</span>]); <span class="co">// 取出標記 (\w+)</span>
+  <span class="kw">this</span>.<span class="fu">args</span>  = <span class="ot">tokens</span>.<span class="fu">slice</span>(<span class="dv">1</span>); <span class="co">// 取出參數部份</span>
+  <span class="kw">this</span>.<span class="fu">op</span>    = opTable[opName]; <span class="co">// 取得指令表中的 OP 物件</span>
+  <span class="kw">this</span>.<span class="fu">obj</span>   = <span class="st">&quot;&quot;</span>; <span class="co">// 清空目的碼 16 進位字串 obj </span>
+}
+
+<span class="ot">module</span>.<span class="fu">exports</span> = code; <span class="co">// 匯出指令物件 code</span></code></pre>
+<p>現在、我們以經完成組譯器抽象架構的設計了，可以開始進入與 CPU0 有關的實作部分，也就是 as0.js 的組譯器實作， 補完 as.js 當中所沒有的 parse(), translate() 等函數了，以下是其原始程式碼。</p>
+<p>檔案：as0.js (具體的 CPU0 組譯器 AS0)</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> c = <span class="fu">require</span>(<span class="st">&quot;./ccc&quot;</span>); <span class="co">// 引用基本函式庫 ccc.js</span>
+<span class="kw">var</span> as = <span class="fu">require</span>(<span class="st">&quot;./as&quot;</span>); <span class="co">// 引用抽象組譯器物件 as.js</span>
+<span class="kw">var</span> code = <span class="fu">require</span>(<span class="st">&quot;./code&quot;</span>); <span class="co">// 引用指令物件 code.js</span>
+<span class="kw">var</span> cpu0 = <span class="fu">require</span>(<span class="st">&quot;./cpu0&quot;</span>); <span class="co">// 引用處理器物件 cpu0.js</span>
+
+<span class="kw">var</span> as0 = <span class="kw">new</span> <span class="fu">as</span>(<span class="ot">cpu0</span>.<span class="fu">opTable</span>); <span class="co">// 建立 as0 組譯器物件</span>
+
+<span class="ot">as0</span>.<span class="fu">parse</span> = <span class="kw">function</span>(line) { <span class="co">// 剖析組合語言指令，建立 code 物件</span>
+    <span class="kw">return</span> <span class="kw">new</span> <span class="fu">code</span>(line, <span class="kw">this</span>.<span class="fu">opTable</span>);
+}
+
+<span class="ot">as0</span>.<span class="fu">translate</span> = <span class="kw">function</span>(code) { <span class="co">// 指令的編碼函數</span>
+  <span class="kw">var</span> ra=<span class="dv">0</span>, rb=<span class="dv">0</span>, rc=<span class="dv">0</span>, cx=<span class="dv">0</span>;
+  <span class="kw">var</span> pc = <span class="ot">code</span>.<span class="fu">address</span> + <span class="dv">4</span>; <span class="co">// 提取後PC為位址+4</span>
+  <span class="kw">var</span> args = <span class="ot">code</span>.<span class="fu">args</span>, parseR = <span class="ot">code</span>.<span class="fu">parseR</span>; <span class="co">// 取得 code 物件的函數</span>
+  <span class="kw">var</span> labelCode = <span class="kw">null</span>; <span class="co">// JMP label 中 label 所對應行的物件，稱為 labelCode</span>
+  <span class="kw">if</span> (<span class="ot">code</span>.<span class="fu">op</span> == <span class="kw">undefined</span>) { <span class="co">// 如果沒有指令碼 (只有標記)，則清空目的碼</span>
+    <span class="ot">code</span>.<span class="fu">obj</span> = <span class="st">&quot;&quot;</span>; 
+    <span class="kw">return</span>;
+  }
+  <span class="kw">switch</span> (<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">type</span>) { <span class="co">// 根據指令型態</span>
+    <span class="kw">case</span> <span class="st">&#39;J&#39;</span> : <span class="co">// 處理 J 型指令，編出目的碼 OP Ra+cx</span>
+      <span class="kw">switch</span> (<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">name</span>) {
+        <span class="kw">case</span> <span class="st">&quot;RET&quot;</span>: <span class="kw">case</span> <span class="st">&quot;IRET&quot;</span> : <span class="co">// 如果式返回或中斷返回，則只要輸出 op 碼</span>
+            <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="st">&quot;SWI&quot;</span> : <span class="co">// 如果是軟體中斷指令，則只有 cx 參數有常數值</span>
+            cx = <span class="fu">parseInt</span>(args[<span class="dv">0</span>]);
+            <span class="kw">break</span>;
+        <span class="kw">default</span> : <span class="co">// 其他跳躍指令，例如 JMP label, JLE label 等</span>
+            labelCode = <span class="kw">this</span>.<span class="fu">symTable</span>[args[<span class="dv">0</span>]]; <span class="co">// 取得 label 符號位址</span>
+            cx = <span class="ot">labelCode</span>.<span class="fu">address</span> - pc; <span class="co">// 計算 cx 欄位</span>
+            <span class="kw">break</span>;
+      }
+      <span class="ot">code</span>.<span class="fu">obj</span> = <span class="ot">c</span>.<span class="fu">hex</span>(<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">id</span>,<span class="dv">2</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(cx, <span class="dv">6</span>); <span class="co">// 編出目的碼 OP Ra+cx</span>
+      <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&#39;L&#39;</span> : <span class="co">// 處理 L 型指令，編出目的碼 OP Ra, Rb, cx</span>
+      ra = <span class="fu">parseR</span>(args[<span class="dv">0</span>]); <span class="co">// 取得 Ra 欄位</span>
+      <span class="kw">switch</span> (<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">name</span>) {
+        <span class="kw">case</span> <span class="st">&quot;LDI&quot;</span> :  <span class="co">// 處理  LDI 指令</span>
+            cx = <span class="fu">parseInt</span>(args[<span class="dv">1</span>]); <span class="co">// 取得 cx 欄位</span>
+            <span class="kw">break</span>;
+        <span class="kw">default</span> : <span class="co">// 處理 LD, ST, LDB, STB 指令</span>
+            <span class="kw">if</span> (args[<span class="dv">1</span>].<span class="fu">match</span>(<span class="ot">/</span><span class="fl">^</span><span class="bn">[a-zA-Z]</span><span class="ot">/</span>)){ <span class="co">// 如果是 LD LABEL 這類情況</span>
+              labelCode = <span class="kw">this</span>.<span class="fu">symTable</span>[args[<span class="dv">1</span>]]; <span class="co">// 取得標記的 code 物件</span>
+              rb = <span class="dv">15</span>; <span class="co">// R[15] is PC</span>
+              cx = <span class="ot">labelCode</span>.<span class="fu">address</span> - pc; <span class="co">// 計算標記與 PC 之間的差值</span>
+            } <span class="kw">else</span> { <span class="co">// 否則，若是像 LD Ra, Rb+100 這樣的指令</span>
+              rb = <span class="fu">parseR</span>(args[<span class="dv">2</span>]); <span class="co">// 取得 rb 欄位</span>
+              cx = <span class="fu">parseInt</span>(args[<span class="dv">3</span>]); <span class="co">// 取得 cx 欄位 (例如 100)</span>
+            }
+            <span class="kw">break</span>;
+      }
+      <span class="ot">code</span>.<span class="fu">obj</span> = <span class="ot">c</span>.<span class="fu">hex</span>(<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">id</span>, <span class="dv">2</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(ra, <span class="dv">1</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(rb, <span class="dv">1</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(cx, <span class="dv">4</span>); <span class="co">// 編出目的碼 OP Ra, Rb, cx</span>
+      <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&#39;A&#39;</span> : <span class="co">// 處理 A 型指令，編出目的碼 OP Ra, Rb, Rc, cx</span>
+      ra = <span class="fu">parseR</span>(args[<span class="dv">0</span>]); <span class="co">// 取得 Ra 欄位</span>
+      <span class="kw">switch</span> (<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">name</span>) {
+        <span class="kw">case</span> <span class="st">&quot;LDR&quot;</span>: <span class="kw">case</span> <span class="st">&quot;LBR&quot;</span>: <span class="kw">case</span> <span class="st">&quot;STR&quot;</span>: <span class="kw">case</span> <span class="st">&quot;SBR&quot;</span>:  <span class="co">// 處理  LDR, LBR, STR, SBR 指令，例如 LDR Ra, Rb+Rc</span>
+            rb = <span class="fu">parseR</span>(args[<span class="dv">1</span>]); <span class="co">// 取得 Rb 欄位</span>
+            rc = <span class="fu">parseR</span>(args[<span class="dv">2</span>]); <span class="co">// 取得 Rc 欄位</span>
+            <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="st">&quot;CMP&quot;</span>: <span class="kw">case</span> <span class="st">&quot;MOV&quot;</span> : <span class="co">// 處理 CMP 與 MOV 指令，CMP Ra, Rb; MOV Ra, Rb</span>
+            rb = <span class="fu">parseR</span>(args[<span class="dv">1</span>]); <span class="co">// 取得 Rb</span>
+            <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="st">&quot;SHL&quot;</span>: <span class="kw">case</span> <span class="st">&quot;SHR&quot;</span>: <span class="kw">case</span> <span class="st">&quot;ADDI&quot;</span>: <span class="co">// 處理 SHL, SHR, ADDI 指令，例如 SHL Ra, Rb, Cx</span>
+            rb = <span class="fu">parseR</span>(args[<span class="dv">1</span>]); <span class="co">// 取得 Rb 欄位</span>
+            cx = <span class="fu">parseInt</span>(args[<span class="dv">2</span>]); <span class="co">// 取得 cx 欄位 (例如 3)</span>
+            <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="st">&quot;PUSH&quot;</span>: <span class="kw">case</span> <span class="st">&quot;POP&quot;</span>: <span class="kw">case</span> <span class="st">&quot;PUSHB&quot;</span>: <span class="kw">case</span> <span class="st">&quot;POPB&quot;</span> :  <span class="co">// 處理 PUSH, POP, PUSHB, POPB</span>
+            <span class="kw">break</span>; <span class="co">// 例如 PUSH Ra, 只要處理 Ra 就好，A 型一進入就已經處理 Ra 了。</span>
+        <span class="kw">default</span> :  <span class="co">// 其他情況，像是 ADD, SUB, MUL, DIV, AND, OR, XOR 等，例如 ADD Ra, Rb, Rc</span>
+            rb = <span class="fu">parseR</span>(args[<span class="dv">1</span>]);  <span class="co">// 取得 Rb 欄位</span>
+            rc = <span class="fu">parseR</span>(args[<span class="dv">2</span>]);  <span class="co">// 取得 Rc 欄位</span>
+            <span class="kw">break</span>;
+      }
+      <span class="ot">code</span>.<span class="fu">obj</span> = <span class="ot">c</span>.<span class="fu">hex</span>(<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">id</span>, <span class="dv">2</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(ra, <span class="dv">1</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(rb, <span class="dv">1</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(rc,<span class="dv">1</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(cx, <span class="dv">3</span>); <span class="co">// 編出目的碼 OP Ra, Rb, Rc, cx</span>
+      <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&#39;D&#39;</span> : { <span class="co">// 我們將資料宣告  RESW, RESB, WORD, BYTE 也視為一種指令，其形態為 D</span>
+      <span class="kw">var</span> unitSize = <span class="dv">1</span>; <span class="co">// 預設的型態為 BYTE，資料大小 = 1</span>
+      <span class="kw">switch</span> (<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">name</span>) {                    
+        <span class="kw">case</span> <span class="st">&quot;RESW&quot;</span>:  <span class="kw">case</span> <span class="st">&quot;RESB&quot;</span>: <span class="co">// 如果是 RESW 或 RESB，例如 a:RESB 2</span>
+          <span class="ot">code</span>.<span class="fu">obj</span> = <span class="ot">c</span>.<span class="fu">dup</span>(<span class="st">&#39;0&#39;</span>, <span class="kw">this</span>.<span class="fu">size</span>(code)*<span class="dv">2</span>); <span class="co">// 1 個 byte 的空間要用兩個16進位的 00 去填充</span>
+          <span class="kw">break</span>;                                    <span class="co">// 例如：a RESB 2 會編為 &#39;0000&#39;</span>
+        <span class="kw">case</span> <span class="st">&quot;WORD&quot;</span>: <span class="co">// 如果是 WORD ，佔 4 個 byte</span>
+          unitSize = <span class="dv">4</span>;
+        <span class="kw">case</span> <span class="st">&quot;BYTE&quot;</span>: { <span class="co">// 如果是 BYTE ，佔 1 個 byte</span>
+          <span class="ot">code</span>.<span class="fu">obj</span> = <span class="st">&quot;&quot;</span>; <span class="co">// 一開始目的碼為空的</span>
+          <span class="kw">for</span> (<span class="kw">var</span> i <span class="kw">in</span> args) { <span class="co">// 對於每個參數，都要編為目的碼</span>
+            <span class="kw">if</span> (args[i].<span class="fu">match</span>(<span class="ot">/</span><span class="fl">^\&quot;</span><span class="ot">.</span><span class="fl">*?\&quot;$</span><span class="ot">/</span>)) {  <span class="co">// 該參數為字串，例如： &quot;Hello!&quot; 轉為 68656C6C6F21</span>
+              <span class="kw">var</span> str = args[i].<span class="fu">substring</span>(<span class="dv">1</span>, args[i].<span class="fu">length</span><span class="dv">-1</span>); <span class="co">// 取得 &quot;...&quot; 中間的字串內容</span>
+              <span class="ot">code</span>.<span class="fu">obj</span> += <span class="ot">c</span>.<span class="fu">str2hex</span>(str); <span class="co">// 將字串內容 (例如 Hello!) 轉為 16 進位 (例如 68656C6C6F21)</span>
+            } <span class="kw">else</span> <span class="kw">if</span> (args[i].<span class="fu">match</span>(<span class="ot">/</span><span class="fl">^</span><span class="bn">\d</span><span class="fl">+$</span><span class="ot">/</span>)) {  <span class="co">// 該參數為常數，例如 26</span>
+              <span class="ot">code</span>.<span class="fu">obj</span> += <span class="ot">c</span>.<span class="fu">hex</span>(<span class="fu">parseInt</span>(args[i]), unitSize*<span class="dv">2</span>); <span class="co">// 將常數轉為 16 進位目的碼 (例如 26 轉為 1A)</span>
+            } <span class="kw">else</span> { <span class="co">// 該參數為標記，將標記轉為記憶體位址，例如 msgptr: WORD msg 中的 msg 轉為位址 (例如：00000044)</span>
+              labelCode = <span class="kw">this</span>.<span class="fu">symTable</span>[args[i]]; <span class="co">// 取得符號表內的物件</span>
+              <span class="ot">code</span>.<span class="fu">obj</span> += <span class="ot">c</span>.<span class="fu">hex</span>(<span class="ot">labelCode</span>.<span class="fu">address</span>, unitSize*<span class="dv">2</span>); <span class="co">// 取得位址並轉為 16 進位，塞入目的碼中。</span>
+            }
+          }
+          <span class="kw">break</span>;
+        } <span class="co">// case BYTE:</span>
+      } <span class="co">// switch</span>
+      <span class="kw">break</span>;
+    } <span class="co">// case &#39;D&#39;</span>
+  }
+} 
+
+<span class="co">// 使用範例 node as0 sum.as0 sum.ob0</span>
+<span class="co">// 其中 argv[2] 為組合語言檔, argv[3] 為目的檔</span>
+<span class="ot">as0</span>.<span class="fu">assemble</span>(<span class="ot">process</span>.<span class="fu">argv</span>[<span class="dv">2</span>], <span class="ot">process</span>.<span class="fu">argv</span>[<span class="dv">3</span>]); </code></pre>
+<p>在 as0.js 組譯器中我們還匯入了 cpu0.js 這個模組，雖然此模組已經於上一期當中介紹過了，不過由於上一期有幾個指令型態 設錯了 (LDR, STR, LBR, SBR 應該是 A 格式，上一期當中誤植為 L 格式)，因此我們再度列出 cpu0.js 的更正後內容如下：</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> opTable = <span class="fu">require</span>(<span class="st">&quot;./optable&quot;</span>); <span class="co">// 引用指令表 opTable 物件</span>
+
+<span class="co">// 指令陣列</span>
+<span class="kw">var</span> opList = [ <span class="st">&quot;LD 00 L&quot;</span>, <span class="st">&quot;ST  01 L&quot;</span>, <span class="st">&quot;LDB 02 L&quot;</span>,  <span class="st">&quot;STB 03 L&quot;</span>, <span class="st">&quot;LDR 04 A&quot;</span>, 
+<span class="st">&quot;STR 05 A&quot;</span>, <span class="st">&quot;LBR 06 A&quot;</span>,  <span class="st">&quot;SBR 07 A&quot;</span>,  <span class="st">&quot;LDI 08 L&quot;</span>, <span class="st">&quot;CMP 10 A&quot;</span>, <span class="st">&quot;MOV 12 A&quot;</span>, 
+<span class="st">&quot;ADD 13 A&quot;</span>,  <span class="st">&quot;SUB 14 A&quot;</span>,  <span class="st">&quot;MUL 15 A&quot;</span>, <span class="st">&quot;DIV 16 A&quot;</span>,  <span class="st">&quot;AND 18 A&quot;</span>, <span class="st">&quot;OR  19 A&quot;</span>,  <span class="st">&quot;XOR 1A A&quot;</span>,  
+<span class="st">&quot;ADDI 1B A&quot;</span>, <span class="st">&quot;ROL 1C A&quot;</span>,  <span class="st">&quot;ROR 1D A&quot;</span>, <span class="st">&quot;SHL 1E A&quot;</span>, <span class="st">&quot;SHR 1F A&quot;</span>,  
+<span class="st">&quot;JEQ 20 J&quot;</span>, <span class="st">&quot;JNE 21 J&quot;</span>,  <span class="st">&quot;JLT 22 J&quot;</span>, <span class="st">&quot;JGT 23 J&quot;</span>, <span class="st">&quot;JLE 24 J&quot;</span>,  <span class="st">&quot;JGE 25 J&quot;</span>, <span class="st">&quot;JMP 26 J&quot;</span>, 
+<span class="st">&quot;SWI 2A J&quot;</span>, <span class="st">&quot;JSUB 2B J&quot;</span>,<span class="st">&quot;RET 2C J&quot;</span>, <span class="st">&quot;PUSH 30 J&quot;</span>, <span class="st">&quot;POP 31 J&quot;</span>,  <span class="st">&quot;PUSHB 32 J&quot;</span>, 
+<span class="st">&quot;POPB 33 J&quot;</span>, <span class="st">&quot;RESW F0 D&quot;</span>, <span class="st">&quot;RESB F1 D&quot;</span>, <span class="st">&quot;WORD F2 D&quot;</span>, <span class="st">&quot;BYTE F3 D&quot;</span>];
+
+<span class="kw">var</span> cpu = { <span class="st">&quot;opTable&quot;</span> : <span class="kw">new</span> <span class="fu">opTable</span>(opList) }; <span class="co">// cpu0 處理器物件，內含一個指令表 opTable</span>
+
+<span class="kw">if</span> (<span class="ot">process</span>.<span class="fu">argv</span>[<span class="dv">3</span>] == <span class="st">&quot;-t&quot;</span>) <span class="co">// 如果使用 node cpu0 -t 可以印出指令表</span>
+    <span class="ot">cpu</span>.<span class="ot">opTable</span>.<span class="fu">dump</span>();
+
+<span class="ot">module</span>.<span class="fu">exports</span> = cpu; <span class="co">// 匯出 cpu0 模組。</span></code></pre>
+<h2 id="程式說明"><a href="#程式說明">程式說明</a></h2>
+<p>在上述的 as.js 程式中，第一階段 pass1() 的工作是將每個組合語言指令的位址編好，並紀錄下所有符號的位址， 這個過程顯示在組譯報表的 PASS1 部分，您可以看到上述 as0 組譯器的輸出範例中，每個指令的位址都被計算出來了， 如下所示：</p>
+<pre><code>=================PASS1================
+0000          LD       R1,sum           L 00
+0004          LD       R2,i             L 00
+0008          LDI      R3,10            L 08
+000C FOR      CMP      R2,R3            A 10
+0010          JGT      EXIT             J 23
+0014          ADD      R1,R1,R2         A 13
+0018          ADDI     R2,R2,1          A 1B
+001C          JMP      FOR              J 26
+0020 EXIT     ST       R1,sum           L 01
+0024          ST       R2,i             L 01
+0028          LD       R9,msgptr        L 00
+002C          SWI      3                J 2A
+0030          MOV      R9,R1            A 12
+0034          SWI      4                J 2A
+0038          RET                       J 2C
+003C i        RESW     1                D F0
+0040 sum      WORD     0                D F2
+0044 msg      BYTE     &quot;1+...+10=&quot;,0    D F3
+004E msgptr   WORD     msg              D F2</code></pre>
+<p>而且在 PASS1 完成之後，所有符號的位址都會被記錄在符號表當中，如下所示：</p>
+<pre><code>===============SYMBOL TABLE=========
+FOR      000C
+EXIT     0020
+i        003C
+sum      0040
+msg      0044
+msgptr   004E</code></pre>
+<p>接著在 PASS2 當中，我們就可以利用這些符號表中的位址，編制出每個指令中的符號的「定址方式、相對位址」等等，如下表所示：</p>
+<pre><code>=============PASS2==============
+0000          LD       R1,sum           L 00 001F003C
+0004          LD       R2,i             L 00 002F0034
+0008          LDI      R3,10            L 08 0830000A
+000C FOR      CMP      R2,R3            A 10 10230000
+0010          JGT      EXIT             J 23 2300000C
+0014          ADD      R1,R1,R2         A 13 13112000
+0018          ADDI     R2,R2,1          A 1B 1B220001
+001C          JMP      FOR              J 26 26FFFFEC
+0020 EXIT     ST       R1,sum           L 01 011F001C
+0024          ST       R2,i             L 01 012F0014
+0028          LD       R9,msgptr        L 00 009F0022
+002C          SWI      3                J 2A 2A000003
+0030          MOV      R9,R1            A 12 12910000
+0034          SWI      4                J 2A 2A000004
+0038          RET                       J 2C 2C000000
+003C i        RESW     1                D F0 00000000
+0040 sum      WORD     0                D F2 00000000
+0044 msg      BYTE     &quot;1+...+10=&quot;,0    D F3 312B2E2E2E2B31303D00
+004E msgptr   WORD     msg              D F2 00000044</code></pre>
+<p>由於 CPU0 設計得很簡單，因此對於一般的指令而言(像是 ADD, MOV, RET 等)，編制出機器碼是很容易的，例如 RET 指令不包含任何參數，因此其機器碼就是在指令碼 OP=2C 後面補 0，直到填滿 32bit (8 個 16 進位數字) 為止， 而 ADD R1,R1,R2 的編碼也很容易，就是將指令碼 OP=13 補上暫存器代號 1, 1, 2 之後再補 0，形成 13112000 的編碼。</p>
+<p>最難處理的是有標記的指令，舉例而言，像是 JGT EXIT 的機器碼 2300000C 與 JMP FOR 的機器碼 26FFFFEC 是怎麼來的呢？</p>
+<p>關於這點，我們必須用較長的篇幅解釋一下：</p>
+<p>在上述 AS0 程式的設計當中，我們一律用「相對於程式計數器 PC 的定址法」來進行標記的編碼 (cx = label.address-PC)， 例如在 JGT EXIT 這個指令中，由於標記 EXIT 的位址是 0020 ，而 JGT EXIT 指令的位址為 0010，因此兩者之差距為 0010，但是由於 JGT EXIT 指令執行時其程式計數器 PC 已經進到下一個位址 (0014) 了(在指令擷取階段完成後就會進到下一個位址)， 所以 PC 與 FOR 標記之間的位址差距為 (cx = label.address-PC= 0020-0014 = 000C) (請注意這是用 16 進位的減法)， 因此整個 JGT EXIT 指令就被組譯為 JGT EXIT = JGT R15+cx = 23 F 000C。 (其中 R15 是 CPU0 的程式計數器 PC，所以暫存器 Ra 部分編為 15 的十六進位值 F)。</p>
+<p>但是、有時候相對定址若是負值，也就是標記在指令的前面，像是 JMP FOR 的情況時，最後 cx = label.address-PC 計算出來會是 負值，此時就必須採用 2 補數表示法，例如 JMP FOR 的情況 (cx = label.address-PC = 000C-0020 = -0014) (請注意這是用 16 進位的減法)， 採用 2 補數之後就會變成 FFFFEC，因此 JMP FOR 被編為 26 F FFFEC。</p>
+<h2 id="結語"><a href="#結語">結語</a></h2>
+<p>現在、我們已經完成了組譯器 AS0 的設計，並解析了整個組譯器的原始碼，希望透過這種方式，可以讓讀者瞭解 整個組譯器的設計過程。在後續的文章之中，我們還會介紹開放電腦計畫中「虛擬機、編譯器」的 JavaScript 原始碼， 以及實作 CPU0 處理器的 Verilog 原始碼。然後再進入作業系統的設計部分，希望透過這種方式，可以讓讀者瞭解 如何「自己動手設計一台電腦」，完成「開放電腦計畫」的主要目標。</p>
+</div>
+<div id="footer">
+<a href="http://ccckmit.wikidot.com">陳鍾誠</a>衍生自<a href="http://zh.wikipedia.org/">維基百科</a>之作品：採用 <a href="http://creativecommons.org/licenses/by-sa/3.0/tw/ ">創作共用：姓名標示、相同方式分享</a> <a href="license.html">授權</a>
+</div>
+</body>
+</html>

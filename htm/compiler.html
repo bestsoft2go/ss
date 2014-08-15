@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="../css/book.css" type="text/css" />
+</head>
+<body>
+<div id="header_wrap">
+  <h1><a href="book.htm">開放電腦計畫 -- 系統程式</a><BR/><sub>(使用 JavaScript 實作)</sub></h1>
+  <table id="bar" border="0" style="border:0;"><tr style="border:0;">
+    <td style="text-align:left;border:0;"> <a href="book.html">目錄</a> | <a href="download.html">下載</a></td>
+    <td style="text-align:right;border:0;"><a href="http://ccckmit.wikidot.com/">陳鍾誠</a> 於 <a href="http://www.nqu.edu.tw/">金門大學</a></td>
+  </tr></table>
+</div>
+<div id="content">
+<div id="TOC">
+<ul>
+<li><a href="#編譯器">編譯器</a></li>
+</ul>
+</div>
+<h1 id="編譯器"><a href="#編譯器">編譯器</a></h1>
+<p>在前面的文章中，我們首先介紹了整體架構，接著設計出了 CPU0 的指令集，然後寫出了 AS0 組譯器與 VM0 虛擬機：</p>
+<p>但是、直到目前為止，我們都還沒有為開放電腦計畫打造出「高階語言」，因此本文將設計出一個 名為 J0 的高階語言 (代表JavaScript 的精簡版)，並採用 JavaScript 去實作，然後在 node.js 平台中執行。</p>
+<p>有了 J0 語言與 J0C 編譯器之後，我們就可以創建出以下的工具鏈：</p>
+<blockquote>
+<p>J0 語言 ( j0c 編譯器) =&gt; IR0 中間碼 (ir2as 轉換器) =&gt; CPU0 組合語言 (AS0 組譯器) =&gt; CPU0 機器碼 (VM0 虛擬機執行或 CPU0 FPGA 執行)</p>
+</blockquote>
+</div>
+<div id="footer">
+<a href="http://ccckmit.wikidot.com">陳鍾誠</a>衍生自<a href="http://zh.wikipedia.org/">維基百科</a>之作品：採用 <a href="http://creativecommons.org/licenses/by-sa/3.0/tw/ ">創作共用：姓名標示、相同方式分享</a> <a href="license.html">授權</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,2534 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="2014 年 8 月出版" />
+  <title>開放電腦計畫 -- 系統程式</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="../css/book.css" type="text/css" />
+</head>
+<body>
+<div id="header_wrap">
+  <h1><a href="book.htm">開放電腦計畫 -- 系統程式</a><BR/><sub>(使用 JavaScript 實作)</sub></h1>
+  <table id="bar" border="0" style="border:0;"><tr style="border:0;">
+    <td style="text-align:left;border:0;"> <a href="book.html">目錄</a> | <a href="download.html">下載</a></td>
+    <td style="text-align:right;border:0;"><a href="http://ccckmit.wikidot.com/">陳鍾誠</a> 於 <a href="http://www.nqu.edu.tw/">金門大學</a></td>
+  </tr></table>
+</div>
+<div id="content">
+<div id="header">
+<h1 class="title">開放電腦計畫 -- 系統程式</h1>
+<h2 class="author">2014 年 8 月出版</h2>
+<h3 class="date">作者：陳鍾誠衍生自維基百科 (創作共用：姓名標示、相同方式分享授權)</h3>
+</div>
+<div id="TOC">
+<ul>
+<li><a href="#前言">前言</a><ul>
+<li><a href="#序">序</a></li>
+<li><a href="#授權聲明">授權聲明</a></li>
+</ul></li>
+<li><a href="#開放電腦計畫">開放電腦計畫</a><ul>
+<li><a href="#硬體計算機結構">硬體：計算機結構</a></li>
+<li><a href="#軟體系統程式">軟體：系統程式</a></li>
+<li><a href="#參考文獻">參考文獻</a></li>
+</ul></li>
+<li><a href="#cpu0-處理器">CPU0 處理器</a><ul>
+<li><a href="#cpu0-指令集">CPU0 指令集</a></li>
+<li><a href="#實作cpu0-的指令表">實作：CPU0 的指令表</a></li>
+</ul></li>
+<li><a href="#虛擬機---vm0">虛擬機 - vm0</a><ul>
+<li><a href="#組譯範例">組譯範例</a></li>
+<li><a href="#vm0-虛擬機設計">VM0 虛擬機設計</a></li>
+<li><a href="#結語">結語</a></li>
+</ul></li>
+<li><a href="#組譯器---as0">組譯器 - as0</a><ul>
+<li><a href="#組譯範例-1">組譯範例</a></li>
+<li><a href="#as0-組譯器設計">AS0 組譯器設計</a></li>
+<li><a href="#程式說明">程式說明</a></li>
+<li><a href="#結語-1">結語</a></li>
+</ul></li>
+<li><a href="#編譯器">編譯器</a><ul>
+<li><a href="#編譯器高階語言轉中間碼---j0c">編譯器：高階語言轉中間碼 - j0c</a></li>
+<li><a href="#編譯器中間碼轉組合語言---ir2as">編譯器：中間碼轉組合語言 - ir2as</a></li>
+</ul></li>
+<li><a href="#結語-4">結語</a></li>
+</ul>
+</div>
+<h1 id="前言"><a href="#前言">前言</a></h1>
+<h2 id="序"><a href="#序">序</a></h2>
+<p>本書是「開放電腦計畫的軟體部份」，描述如何設計系統軟體的方法，透過這本書，我們希望讓「系統程式」這門課變成是很容易理解並實作的。</p>
+<p>我們相信，透過實作的訓練，您將對理論會有更深刻的體會，而這些體會，將會進一步讓您更瞭解「現代電腦工業的結構」是如何建構出來的。</p>
+<h2 id="授權聲明"><a href="#授權聲明">授權聲明</a></h2>
+<p>本書許多資料修改自維基百科，採用 創作共用：<a href="http://creativecommons.org/licenses/by-sa/3.0/tw/">姓名標示、相同方式分享</a> 授權，若您想要修改本書產生衍生著作時，至少應該遵守下列授權條件：</p>
+<ol style="list-style-type: decimal">
+<li>標示原作者姓名 (陳鍾誠+維基百科)。</li>
+<li>採用 創作共用：<a href="http://creativecommons.org/licenses/by-sa/3.0/tw/">姓名標示、相同方式分享</a> 的方式公開衍生著作。</li>
+</ol>
+<p>另外、當本書中有文章或素材並非採用 <a href="http://creativecommons.org/licenses/by-sa/3.0/tw/">姓名標示、相同方式分享</a> 時，將會在該文章或素材後面標示其授權，此時該文章將以該標示的方式授權釋出，請修改者注意這些授權標示，以避免產生侵權糾紛。</p>
+<p>例如有些文章可能不希望被作為「商業性使用」，此時就可能會採用創作共用：<a href="http://creativecommons.org/licenses/by-nc-sa/3.0/tw/">姓名標示、非商業性、相同方式分享</a> 的授權，此時您就不應當將該文章用於商業用途上。</p>
+<p>最後、若讀者有需要轉貼或修改這些文章使用，請遵守「創作共用」的精神，讓大家都可以在「開放原始碼」的基礎上逐步改進這些作品。</p>
+<h1 id="開放電腦計畫"><a href="#開放電腦計畫">開放電腦計畫</a></h1>
+<p>如果您是資工系畢業的學生，必然會上過「計算機結構、編譯器、作業系統、系統程式」等等課程， 這些課程都是設計出一台電腦所必需的基本課程。但是如果有人問您「您是否會設計電腦呢？」，相信大部分人 的回答應該是：「我不會，也沒有設計過」。</p>
+<p>光是設計一個作業系統，就得花上十年的工夫，遑論還要自己設計「CPU、匯流排、組譯器、編譯器、作業系統」 等等。因此，我們都曾經有過這樣的夢想，然後在年紀越大，越來越瞭解整個工業結構之後，我們就放棄了這樣 一個夢想，因為我們必須與現實妥協。</p>
+<p>但是，身為一個大學教師，我有責任教導學生，告訴他們「電腦是怎麼做出來的」，因此我不自量力的提出了 這樣一個計畫，那就是「開放電腦計畫」，我們將以「千里之行、始於足下」的精神，設計出一台全世界最簡單 且清楚的「電腦」，包含「軟體與硬體」。</p>
+<p>從 2007 年我開始寫「系統程式」這本書以來，就有一個想法逐漸在內心發酵， 這個想法就是：「我想從 CPU 設計、組譯器、虛擬機、編譯器到作業系統」，自己打造一台電腦，於是、「開放電腦計畫」就誕生了！</p>
+<p>那麼、開放電腦計畫的「產品」會是什麼呢？</p>
+<p>應該有些人會認為是一套自行編寫的軟硬體程式，當然、這部份是包含在「開放電腦計畫」當中的。</p>
+<p>但是、更重要的事情是，我們希望透過「開放電腦計畫」讓學生能夠學會整個「電腦的軟硬體設計方式」，並且透過這個踏腳石瞭解整個「電腦軟硬體工業」，進而能夠達到「以理論指導實務、以實務驗證理論」的目標。</p>
+<p>為了達成這個目標，我們將「開放電腦計畫」分成三個階段，也就是「簡單設計 (程式) =&gt; 理論闡述 (書籍) =&gt; 開源實作 (工業軟硬體與流程)」，整體的構想說明如下：</p>
+<ol style="list-style-type: decimal">
+<li>簡單設計(程式)： 採用 Verilog + C 設計「CPU、組譯器、編譯器、作業系統」等軟硬體，遵循 KISS (Keep It Simple and Stupid) 原則，不考慮「效能」 與「商業競爭力」等問題，甚至在實用性上進行了不少妥協，一律採用「容易理解」為最高指導原則，目的是清楚的展現整個「軟硬體系統」的架構。</li>
+<li>理論闡述(書籍)： 但是、要瞭解像「處理器、系統軟體、編譯器、作業系統」這些領域，只有程式是不夠的。因為程式通常不容易懂，而且對於沒有背景知識的人而言，往往難如天書。所以我們將撰寫一系列書籍，用來說明上述簡單程式的設計原理，然後開始進入「計算機結構、編譯器、作業系統、系統程式」的理論體系中，導引出進一步的設計可能性與工業考量等議題。</li>
+<li>開源實作(工業)：一但有了前述的理論與實作基礎之後，我們就會採用「開放原始碼」來進行案例研究。舉例而言、在「計算機結構」上我們會以 ARM 為實務核心、「編譯器」領域則以 gcc, LLVM 為研究標的，「作業系統」上則會對 FreeRTOS、Linux 等進行案例研究，「虛擬機」上則會以 QEMU、V8 等開源案例為研究對象。</li>
+</ol>
+<div class="figure">
+<img src="../img/OpenComputerMap.jpg" alt="圖、開放電腦計畫地圖" /><p class="caption">圖、開放電腦計畫地圖</p>
+</div>
+<p>根據以上規劃，本書乃為一系列書籍中的一本，完整的書籍架構如下：</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">開放電腦計畫書籍</th>
+<th align="left">簡易程式</th>
+<th align="left">工業實作</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">系統程式</td>
+<td align="left">as0, vm0, cc0, os0</td>
+<td align="left">gcc/llvm</td>
+</tr>
+<tr class="even">
+<td align="left">計算機結構</td>
+<td align="left">mcu0, cpu0</td>
+<td align="left">ARM/OpenRISC</td>
+</tr>
+<tr class="odd">
+<td align="left">編譯器 c</td>
+<td align="left">0c, j0c g</td>
+<td align="left">cc/llvm</td>
+</tr>
+<tr class="even">
+<td align="left">作業系統</td>
+<td align="left">os0, XINU, MINIX</td>
+<td align="left">FreeRTOS, Linux</td>
+</tr>
+</tbody>
+</table>
+<p>這些書籍分別描述不同的面向，其涵蓋範圍如下圖所示：</p>
+<div class="figure">
+<img src="../img/OpenComputerMap2.jpg" alt="圖、開放電腦計畫書籍圖" /><p class="caption">圖、開放電腦計畫書籍圖</p>
+</div>
+<h2 id="硬體計算機結構"><a href="#硬體計算機結構">硬體：計算機結構</a></h2>
+<p>在硬體方面，我們將自行設計兩款處理器，一款是用來展示簡單「微處理器」設計原理的16 位元微控制器 MCU0，而另一款則是用來展示「高階處理器」設計原理的 32 位元處理器 CPU0。</p>
+<p>透過 MCU0，我們希望展示一顆「最簡易微處理器」的設計方法，我們將採用「流程式」與「區塊式」的方法分別實作一遍，讓讀者可以分別從「硬體人」與「軟體人」的角度去體會處理器的設計方式。由於「流程式」的方法比較簡單，因此我們會先用此法進行設計，當讀者理解何謂「微處理器」之後，在將同樣的功能改用「區塊式的方法」實作一遍，這樣應該就能逐漸「由易至難、由淺入深」了。</p>
+<p>在 MCU0 當中，我們採用「CPU 與記憶體」合一的設計方式，這種方式比較像「系統單晶片」(SOC) 的設計方法，其記憶體容量較小，因此可以直接用 Verilog 陣列宣告放入 FPGA 當中使用，不需考慮外部 DRAM 存取速度較慢的問題，也不用考慮「記憶階層」的速度問題，因此設計起來會相對容易許多。</p>
+<p>接著，我們將再度設計一個 32 位元的處理器 -- CPU0。並透過 CPU0 來討論「當 CPU 速度比 DRAM 記憶體快上許多」的時候，如何能透過快取 (cache) 與記憶體管理單元 (MMU) 達到「又快又大」的目的，並且討論如何透過「流水線」架構 (Pipeline) 達到加速的目的，這些都屬於「高階處理器」所需要討論的問題。</p>
+<h2 id="軟體系統程式"><a href="#軟體系統程式">軟體：系統程式</a></h2>
+<p>有了 MCU0 與 CPU0 等硬體之後，我們就可以建構運作於這些硬體之上的軟體了，這些軟體包含「組譯器、虛擬機、編譯器、作業系統」等等。</p>
+<p>我們已經分別用 C 與 JavaSript 建構出簡易的「組譯器、虛擬機、編譯器」工具了，讓我們先說明一下在 CPU0 上這些程式的使用方法，以下示範是採用 node.js+Javascript 實作的工具版本，因此必須安裝 node.js 才能執行。</p>
+<h3 id="組合語言-assembly-language"><a href="#組合語言-assembly-language">組合語言 (Assembly Language)</a></h3>
+<p>接著、讓我們從組合語言的角度，來看看 CPU0 處理器的設計，以下是一個可以計算 <code>1+2+...+10</code> 的程式， 計算完成之後會透過呼叫軟體中斷 SWI 程序 (類似 DOS 時代的 INT 中斷)，在螢幕上印出下列訊息。</p>
+<pre><code>1+...+10=55</code></pre>
+<p>以下的檔案 sum.as0 正是完成這樣功能的一個 CPU0 組合語言程式。</p>
+<p>檔案：sum.as0</p>
+<pre><code>        LD     R1, sum      ; R1 = sum = 0
+        LD     R2, i        ; R2 = i = 1
+        LDI    R3, 10       ; R3 = 10
+FOR:    CMP    R2, R3       ; if (R2 &gt; R3)
+        JGT    EXIT         ;   goto EXIT
+        ADD    R1, R1, R2   ; R1 = R1 + R2 (sum = sum + i)
+        ADDI   R2, R2, 1    ; R2 = R2 + 1  ( i  = i + 1)
+        JMP    FOR          ; goto FOR
+EXIT:   ST     R1, sum      ; sum = R1
+        ST     R2, i        ; i = R2
+        LD     R9, msgptr   ; R9= pointer(msg) = &amp;msg
+        SWI    3            ; SWI 3 : 印出 R9 (=&amp;msg) 中的字串
+        MOV    R9, R1       ; R9 = R1 = sum
+        SWI    4            ; SWI 4 : 印出 R9 (=R1=sum) 中的整數
+        RET                 ; return 返回上一層呼叫函數
+i:      RESW   1            ; int i
+sum:    WORD   0            ; int sum=0
+msg:    BYTE   &quot;1+...+10=&quot;, 0   ; char *msg = &quot;sum=&quot;
+msgptr: WORD   msg          ; char &amp;msgptr = &amp;msg</code></pre>
+<h3 id="組譯器-assembler"><a href="#組譯器-assembler">組譯器 (Assembler)</a></h3>
+<p>我們可以用以下指令呼叫「組譯器 AS0」對上述檔案進行組譯：</p>
+<pre><code>node as0 sum.as0 sum.ob0</code></pre>
+<p>上述的程式經過組譯之後，會輸出組譯報表，如下所示。</p>
+<p>sum.as0 的組譯報表</p>
+<pre><code>0000          LD       R1,sum           L 00 001F003C
+0004          LD       R2,i             L 00 002F0034
+0008          LDI      R3,10            L 08 0830000A
+000C FOR      CMP      R2,R3            A 10 10230000
+0010          JGT      EXIT             J 23 2300000C
+0014          ADD      R1,R1,R2         A 13 13112000
+0018          ADDI     R2,R2,1          A 1B 1B220001
+001C          JMP      FOR              J 26 26FFFFEC
+0020 EXIT     ST       R1,sum           L 01 011F001C
+0024          ST       R2,i             L 01 012F0014
+0028          LD       R9,msgptr        L 00 009F0022
+002C          SWI      3                J 2A 2A000003
+0030          MOV      R9,R1            A 12 12910000
+0034          SWI      2                J 2A 2A000002
+0038          RET                       J 2C 2C000000
+003C i        RESW     1                D F0 00000000
+0040 sum      WORD     0                D F2 00000000
+0044 msg      BYTE     &quot;1+...+10=&quot;,0    D F3 312B2E2E2E2B31303D00
+004E msgptr   WORD     msg              D F2 00000044</code></pre>
+<p>最後「組譯器 AS0」會輸出機器碼到目的檔 sum.ob0 當中，其內容如下所示。</p>
+<p>sum.as0 的機器碼 (以 16 進位顯示)</p>
+<pre><code>001F003C 002F0034 0830000A 10230000
+2300000C 13112000 1B220001 26FFFFEC
+011F001C 012F0014 009F0022 2A000003
+12910000 2A000002 2C000000 00000000
+00000000 312B2E2E 2E2B3130 3D000000
+0044</code></pre>
+<h3 id="虛擬機-virtual-machine"><a href="#虛擬機-virtual-machine">虛擬機 (Virtual Machine)</a></h3>
+<p>如果我們用「虛擬機 VM0」去執行上述的目的檔 sum.ob0，會看到程式的執行結果，是在 螢幕上列印出 <code>1+...+10=55</code>，以下是我們的操作過程。</p>
+<pre><code>1+...+10=55</code></pre>
+<h3 id="編譯器-compiler"><a href="#編譯器-compiler">編譯器 (Compiler)</a></h3>
+<p>當然、一個完整的現代電腦應該包含比組譯器更高階的工具，不只支援組合語言，還要支援高階語言。</p>
+<p>因此、我們設計了一個稱為 J0 的高階語言，語法有點像 JavaScript，但卻是經過簡化的版本。</p>
+<p>然後、我們又設計了一個可以用來編譯 J0 語言的編譯器，稱為 J0C (J0 Compiler)，可以用來將 J0 語言編譯成中間碼， 也可以直接將中間碼轉換為 CPU0 的組合語言。</p>
+<p>以下是一個 J0 語言的範例，</p>
+<p>檔案：sum.j0</p>
+<pre><code>s = sum(10);
+return s;
+
+function sum(n) {
+  s = 0;
+  i=1;
+  while (i&lt;=10) {
+    s = s + i;
+    i++;
+  }
+  return s;
+}
+</code></pre>
+<p>當我們使用 j0c 編譯器將上述程式編譯之後，會輸出兩個檔案，一個是 sum.ir，是編譯器中間格式 (Intermediate Representation, 虛擬碼 pcode) 的輸出檔， 其內容如下：</p>
+<pre><code>D:\Dropbox\Public\web\oc\code&gt;node j0c sum
+         arg      10
+         call     T1       sum
+         =        s        T1
+         return   s
+sum      function
+         param    n
+         =        s        0
+         =        i        1
+L1
+         &lt;=       T2       i        10
+         if0      T2       L2
+         +        T3       s        i
+         =        s        T3
+         ++       i
+         goto     L1
+L2
+         return   s
+         endf</code></pre>
+<p>另一個是將上述中間格式轉換成轉換成 CPU0 組合語言之後的結果，如下所示：</p>
+<pre><code>sum
+         POP      n
+         LDI      R1       0
+         ST       R1       s
+         LDI      R1       1
+         ST       R1       i
+L1
+         LD       R1       i
+         LDI      R2       10
+         LDI      R3       0
+         CMP      R1       R2
+         JLE      else1
+         LDI      R3       1
+else1
+         ST       R3       T1
+         LDI      R1       T1
+         CMP      R1       0
+         JEQ      L2
+         LD       R1       s
+         LD       R2       i
+         ADD      R3       R1       R2
+         ST       R3       T2
+         LDI      R1       T2
+         ST       R1       s
+         LD       R1       i
+         ADDI     R1       R1       1
+         ST       R1       i
+         JMP      L1
+L2
+         LD       R1       s
+         RET
+         LDI      R1       10
+         PUSH     R1
+         CALL     sum
+         ST       R1       T3
+         LDI      R1       T3
+         ST       R1       s
+
+s        WORD     0
+i        WORD     0
+T1       WORD     0
+T2       WORD     0
+T3       WORD     0</code></pre>
+<p>上述由 j0c 所編譯產生的組合語言，感覺相對冗長，是因為這個編譯器是最簡版本，完全沒有做任何優化動作，甚至連暫存器都是 每次重新載入的，所以效率並不會很好。</p>
+<h3 id="作業系統-operating-system"><a href="#作業系統-operating-system">作業系統 (Operating System)</a></h3>
+<p>當然囉！一個完整的電腦還必須要有作業系統，不過如果是嵌入式系統的話，沒有作業系統也沒關係，只要將全部的程式連結在一起， 就可以形成一台電腦了，目前開放電腦計畫的「作業系統」還在研究開發當中，希望很快就能提供大家一個最簡單的作業系統版本。</p>
+<p>目前我們已經寫了一個可以進行兩個行程切換 「Task Switching」 範例，接著我們將參考 UNIXv6, L4 等作業系統，以建構更 完整的簡易作業系統。</p>
+<p>當然、即使我們從 CPU 硬體一路設計到組譯器、虛擬機、編譯器、作業系統等，未來仍然有更多領域等待我們去探索，例如「網路模組、TCP/IP、 Ethernet、無線 RF 的硬體模組、繪圖卡、OpenGL、.....」等等，希望我們能夠用最簡單的話語，將這些電腦的原理說明清楚，並用簡單的方式 實作得更完整。</p>
+<h2 id="參考文獻"><a href="#參考文獻">參考文獻</a></h2>
+<ul>
+<li><a href="http://ccckmit.wikidot.com/ve:main">陳鍾誠的網站/免費電子書：Verilog 電路設計</a></li>
+<li><a href="http://sp1.wikidot.com/main">系統程式</a> 陳鍾誠著, 旗標出版社.</li>
+<li><a href="https://dl.dropboxusercontent.com/u/101584453/pmag/201306/htm/article2.html">JavaScript (6) – Node.js 命令列程式設計</a></li>
+</ul>
+<h1 id="cpu0-處理器"><a href="#cpu0-處理器">CPU0 處理器</a></h1>
+<p>商用的處理器通常因為強調效能的原因，其設計都會讓指令格式變得難懂且複雜。</p>
+<p>為了讓處理器變得更簡單，更容易理解，我們設計了 CPU0 處理器，這個處理計的設計原則是 KISS，也就是 Keep It Simple and Stupid。</p>
+<p>CPU0 的設計不求速度，只求清楚易懂，因此在指令級與指令格式上都盡量簡單，編碼都以 4 位元為單位，因此也很容易可以用人腦將組合語言翻成機器碼。</p>
+<p>以下是一個 CPU0 的組合語言範例，該程式所作的事情是計算 1+2+...+10 的結果，最後應該會得到總和為 55。</p>
+<p>檔案：sum.as0</p>
+<pre><code>        LD     R1, sum      ; R1 = sum = 0
+        LD     R2, i        ; R2 = i = 1
+        LDI    R3, 10       ; R3 = 10
+FOR:    CMP    R2, R3       ; if (R2 &gt; R3)
+        JGT    EXIT         ;   goto EXIT
+        ADD    R1, R1, R2   ; R1 = R1 + R2 (sum = sum + i)
+        ADDI   R2, R2, 1    ; R2 = R2 + 1  ( i  = i + 1)
+        JMP    FOR          ; goto FOR
+EXIT:   ST     R1, sum      ; sum = R1
+        ST     R2, i        ; i = R2
+        LD     R9, msgptr   ; R9= pointer(msg) = &amp;msg
+        SWI    3            ; SWI 3 : 印出 R9 (=&amp;msg) 中的字串
+        MOV    R9, R1       ; R9 = R1 = sum
+        SWI    4            ; SWI 4 : 印出 R9 (=R1=sum) 中的整數
+        RET                 ; return 返回上一層呼叫函數
+i:      RESW   1            ; int i
+sum:    WORD   0            ; int sum=0
+msg:    BYTE   &quot;1+...+10=&quot;, 0   ; char *msg = &quot;sum=&quot;
+msgptr: WORD   msg          ; char &amp;msgptr = &amp;msg</code></pre>
+<h2 id="cpu0-指令集"><a href="#cpu0-指令集">CPU0 指令集</a></h2>
+<p>CPU0 是一個簡易的 32 位元單匯流排處理器，其架構如下圖所示，包含R0..R15, IR, MAR, MDR 等暫存器，其中 IR是指令暫存器， R0 是一個永遠為常數 0 的唯讀暫存器，R15 是程式計數器 (Program Counter : PC)，R14 是連結暫存器 (Link Register : LR)， R13 是堆疊指標暫存器 (Stack Pointer : SP)，而 R12 是狀態暫存器 (Status Word : SW)。</p>
+<div class="figure">
+<img src="../img/cpu0architecture.jpg" alt="圖、CPU0 的架構圖" /><p class="caption">圖、CPU0 的架構圖</p>
+</div>
+<p>CPU0 包含『載入儲存』、『運算指令』、『跳躍指令』、『堆疊指令』等四大類指令，以下表格是 CPU0 的指令編碼表，記載了 CPU0 的指令集與每個指令的編碼。</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">格式</th>
+<th align="left">指令</th>
+<th align="left">OP</th>
+<th align="left">說明</th>
+<th align="left">語法</th>
+<th align="left">語意</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">L</td>
+<td align="left">LD</td>
+<td align="left">00</td>
+<td align="left">載入word</td>
+<td align="left">LD Ra, [Rb+Cx]</td>
+<td align="left">Ra=[Rb+Cx]</td>
+</tr>
+<tr class="even">
+<td align="left">L</td>
+<td align="left">ST</td>
+<td align="left">01</td>
+<td align="left">儲存word</td>
+<td align="left">ST Ra, [Rb+Cx]</td>
+<td align="left">Ra=[Rb+Cx]</td>
+</tr>
+<tr class="odd">
+<td align="left">L</td>
+<td align="left">LDB</td>
+<td align="left">02</td>
+<td align="left">載入 byte</td>
+<td align="left">LDB Ra, [Rb+Cx]</td>
+<td align="left">Ra=(byte)[Rb+Cx]</td>
+</tr>
+<tr class="even">
+<td align="left">L</td>
+<td align="left">STB</td>
+<td align="left">03</td>
+<td align="left">儲存 byte</td>
+<td align="left">STB Ra, [Rb+Cx]</td>
+<td align="left">Ra=(byte)[Rb+Cx]</td>
+</tr>
+<tr class="odd">
+<td align="left">A</td>
+<td align="left">LDR</td>
+<td align="left">04</td>
+<td align="left">LD的暫存器版</td>
+<td align="left">LDR Ra, [Rb+Rc]</td>
+<td align="left">Ra=[Rb+Rc]</td>
+</tr>
+<tr class="even">
+<td align="left">A</td>
+<td align="left">STR</td>
+<td align="left">05</td>
+<td align="left">ST的暫存器版</td>
+<td align="left">STR Ra, [Rb+Rc]</td>
+<td align="left">Ra=[Rb+Rc]</td>
+</tr>
+<tr class="odd">
+<td align="left">A</td>
+<td align="left">LBR</td>
+<td align="left">06</td>
+<td align="left">LDB的暫存器版</td>
+<td align="left">LBR Ra, [Rb+Rc]</td>
+<td align="left">Ra=(byte)[Rb+Rc]</td>
+</tr>
+<tr class="even">
+<td align="left">A</td>
+<td align="left">SBR</td>
+<td align="left">07</td>
+<td align="left">STB的暫存器版</td>
+<td align="left">SBR Ra, [Rb+Rc]</td>
+<td align="left">Ra=(byte)[Rb+Rc]</td>
+</tr>
+<tr class="odd">
+<td align="left">L</td>
+<td align="left">LDI</td>
+<td align="left">08</td>
+<td align="left">載入常數</td>
+<td align="left">LDI Ra, Cx</td>
+<td align="left">Ra=Cx</td>
+</tr>
+<tr class="even">
+<td align="left">A</td>
+<td align="left">CMP</td>
+<td align="left">10</td>
+<td align="left">比較</td>
+<td align="left">CMP Ra, Rb</td>
+<td align="left">SW=Ra &gt;=&lt; Rb</td>
+</tr>
+<tr class="odd">
+<td align="left">A</td>
+<td align="left">MOV</td>
+<td align="left">12</td>
+<td align="left">移動</td>
+<td align="left">MOV Ra, Rb</td>
+<td align="left">Ra=Rb</td>
+</tr>
+<tr class="even">
+<td align="left">A</td>
+<td align="left">ADD</td>
+<td align="left">13</td>
+<td align="left">加法</td>
+<td align="left">ADD Ra, Rb, Rc</td>
+<td align="left">Ra=Rb+Rc</td>
+</tr>
+<tr class="odd">
+<td align="left">A</td>
+<td align="left">SUB</td>
+<td align="left">14</td>
+<td align="left">減法</td>
+<td align="left">SUB Ra, Rb, Rc</td>
+<td align="left">Ra=Rb-Rc</td>
+</tr>
+<tr class="even">
+<td align="left">A</td>
+<td align="left">MUL</td>
+<td align="left">15</td>
+<td align="left">乘法</td>
+<td align="left">MUL Ra, Rb, Rc</td>
+<td align="left">Ra=Rb*Rc</td>
+</tr>
+<tr class="odd">
+<td align="left">A</td>
+<td align="left">DIV</td>
+<td align="left">16</td>
+<td align="left">除法</td>
+<td align="left">DIV Ra, Rb, Rc</td>
+<td align="left">Ra=Rb/Rc</td>
+</tr>
+<tr class="even">
+<td align="left">A</td>
+<td align="left">AND</td>
+<td align="left">18</td>
+<td align="left">邏輯 AND</td>
+<td align="left">AND Ra, Rb, Rc</td>
+<td align="left">Ra=Rb and Rc</td>
+</tr>
+<tr class="odd">
+<td align="left">A</td>
+<td align="left">OR</td>
+<td align="left">19</td>
+<td align="left">邏輯 OR</td>
+<td align="left">OR Ra, Rb, Rc</td>
+<td align="left">Ra=Rb or Rc</td>
+</tr>
+<tr class="even">
+<td align="left">A</td>
+<td align="left">XOR</td>
+<td align="left">1A</td>
+<td align="left">邏輯 XOR</td>
+<td align="left">XOR Ra, Rb, Rc</td>
+<td align="left">Ra=Rb xor Rc</td>
+</tr>
+<tr class="odd">
+<td align="left">A</td>
+<td align="left">ADDI</td>
+<td align="left">1B</td>
+<td align="left">常數加法</td>
+<td align="left">ADDI Ra, Rb, Cx</td>
+<td align="left">Ra=Rb + Cx</td>
+</tr>
+<tr class="even">
+<td align="left">A</td>
+<td align="left">ROL</td>
+<td align="left">1C</td>
+<td align="left">向左旋轉</td>
+<td align="left">ROL Ra, Rb, Cx</td>
+<td align="left">Ra=Rb rol Cx</td>
+</tr>
+<tr class="odd">
+<td align="left">A</td>
+<td align="left">ROR</td>
+<td align="left">1D</td>
+<td align="left">向右旋轉</td>
+<td align="left">ROR Ra, Rb, Cx</td>
+<td align="left">Ra=Rb ror Cx</td>
+</tr>
+<tr class="even">
+<td align="left">A</td>
+<td align="left">SHL</td>
+<td align="left">1E</td>
+<td align="left">向左移位</td>
+<td align="left">SHL Ra, Rb, Cx</td>
+<td align="left">Ra=Rb &lt;&lt; Cx</td>
+</tr>
+<tr class="odd">
+<td align="left">A</td>
+<td align="left">SHR</td>
+<td align="left">1F</td>
+<td align="left">向右移位</td>
+<td align="left">SHR Ra, Rb, Cx</td>
+<td align="left">Ra=Rb &gt;&gt; Cx</td>
+</tr>
+<tr class="even">
+<td align="left">J</td>
+<td align="left">JEQ</td>
+<td align="left">20</td>
+<td align="left">跳躍 (相等)</td>
+<td align="left">JEQ Cx</td>
+<td align="left">if SW(=) PC=PC+Cx</td>
+</tr>
+<tr class="odd">
+<td align="left">J</td>
+<td align="left">JNE</td>
+<td align="left">21</td>
+<td align="left">跳躍 (不相等)</td>
+<td align="left">JNE Cx</td>
+<td align="left">if SW(!=) PC=PC+Cx</td>
+</tr>
+<tr class="even">
+<td align="left">J</td>
+<td align="left">JLT</td>
+<td align="left">22</td>
+<td align="left">跳躍 (&lt;)</td>
+<td align="left">JLT Cx</td>
+<td align="left">if SW(&lt;) PC=PC+Cx</td>
+</tr>
+<tr class="odd">
+<td align="left">J</td>
+<td align="left">JGT</td>
+<td align="left">23</td>
+<td align="left">跳躍 (&gt;)</td>
+<td align="left">JGT Cx</td>
+<td align="left">if SW(&gt;) PC=PC+Cx</td>
+</tr>
+<tr class="even">
+<td align="left">J</td>
+<td align="left">JLE</td>
+<td align="left">24</td>
+<td align="left">跳躍 (&lt;=)</td>
+<td align="left">JLE Cx</td>
+<td align="left">if SW(&lt;=) PC=PC+Cx</td>
+</tr>
+<tr class="odd">
+<td align="left">J</td>
+<td align="left">JGE</td>
+<td align="left">25</td>
+<td align="left">跳躍 (&gt;=)</td>
+<td align="left">JGE Cx</td>
+<td align="left">if SW(&gt;=) PC=PC+Cx</td>
+</tr>
+<tr class="even">
+<td align="left">J</td>
+<td align="left">JMP</td>
+<td align="left">26</td>
+<td align="left">跳躍 (無條件)</td>
+<td align="left">JMP Cx</td>
+<td align="left">PC=PC+Cx</td>
+</tr>
+<tr class="odd">
+<td align="left">J</td>
+<td align="left">SWI</td>
+<td align="left">2A</td>
+<td align="left">軟體中斷</td>
+<td align="left">SWI Cx</td>
+<td align="left">LR=PC; PC=Cx; INT=1</td>
+</tr>
+<tr class="even">
+<td align="left">J</td>
+<td align="left">CALL</td>
+<td align="left">2B</td>
+<td align="left">跳到副程式</td>
+<td align="left">CALL Cx</td>
+<td align="left">LR=PC; PC=PC+Cx</td>
+</tr>
+<tr class="odd">
+<td align="left">J</td>
+<td align="left">RET</td>
+<td align="left">2C</td>
+<td align="left">返回</td>
+<td align="left">RET</td>
+<td align="left">PC=LR</td>
+</tr>
+<tr class="even">
+<td align="left">J</td>
+<td align="left">IRET</td>
+<td align="left">2D</td>
+<td align="left">中斷返回</td>
+<td align="left">IRET</td>
+<td align="left">PC=LR; INT=0</td>
+</tr>
+<tr class="odd">
+<td align="left">A</td>
+<td align="left">PUSH</td>
+<td align="left">30</td>
+<td align="left">推入word</td>
+<td align="left">PUSH Ra</td>
+<td align="left">SP-=4; [SP]=Ra;</td>
+</tr>
+<tr class="even">
+<td align="left">A</td>
+<td align="left">POP</td>
+<td align="left">31</td>
+<td align="left">彈出 word</td>
+<td align="left">POP Ra</td>
+<td align="left">Ra=[SP]; SP+=4;</td>
+</tr>
+<tr class="odd">
+<td align="left">A</td>
+<td align="left">PUSHB</td>
+<td align="left">32</td>
+<td align="left">推入 byte</td>
+<td align="left">PUSHB Ra</td>
+<td align="left">SP--; [SP]=Ra; (byte)</td>
+</tr>
+<tr class="even">
+<td align="left">A</td>
+<td align="left">POPB</td>
+<td align="left">33</td>
+<td align="left">彈出 byte</td>
+<td align="left">POPB Ra</td>
+<td align="left">Ra=[SP]; SP++; (byte)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cpu0-指令格式"><a href="#cpu0-指令格式">CPU0 指令格式</a></h3>
+<p>CPU0 所有指令長度均為 32 位元，這些指令也可根據編碼方式分成三種不同的格式，分別是 A 型、J 型與 L 型。</p>
+<p>大部分的運算指令屬於A (Arithmatic) 型，而載入儲存指令通常屬於 L (Load &amp; Store) 型，跳躍指令則通常屬於 J (Jump) 型， 這三種型態的指令格式如下圖所示。</p>
+<div class="figure">
+<img src="../img/cpu0format.jpg" alt="圖、CPU0的指令格式" /><p class="caption">圖、CPU0的指令格式</p>
+</div>
+<h3 id="狀態暫存器"><a href="#狀態暫存器">狀態暫存器</a></h3>
+<p>R12 狀態暫存器 (Status Word : SW) 是用來儲存 CPU 的狀態值，這些狀態是許多旗標的組合。例如，零旗標 (Zero，簡寫為Z) 代表比較的結果為 0，負旗標 (Negative ，簡寫為N) 代表比較的結果為負值，另外常見的旗標還有進位旗標 (Carry ，簡寫為 C)， 溢位旗標 (Overflow，簡寫為 V) 等等。下圖顯示了 CPU0 的狀態暫存器格式，最前面的四個位元 N、Z、C、V所代表的， 正是上述的幾個旗標值。</p>
+<div class="figure">
+<img src="../img/cpu0sw.jpg" alt="圖、CPU0 中狀態暫存器 SW 的結構" /><p class="caption">圖、CPU0 中狀態暫存器 SW 的結構</p>
+</div>
+<p>條件旗標的 N、Z 旗標值可以用來代表比較結果是大於 (&gt;)、等於 (=) 還是小於 (&lt;)，當執行 CMP Ra, Rb 動作後，會有下列三種可能的情形。</p>
+<ol style="list-style-type: decimal">
+<li>若 Ra &gt; Rb，則 N=0, Z=0。</li>
+<li>若 Ra &lt; Rb，則 N=1, Z=0。</li>
+<li>若 Ra = Rb，則 N=0, Z=1。</li>
+</ol>
+<p>如此，用來進行條件跳躍的 JGT、JGE、JLT、JLE、JEQ、JNE指令，就可以根據 SW 暫存器當中的 N、Z 等旗標決定是否進行跳躍。</p>
+<p>SW 中還包含中斷控制旗標 I (Interrupt) 與 T (Trap)，用以控制中斷的啟動與禁止等行為，假如將 I 旗標設定為 0，則CPU0將禁止所有種類的中斷，也就是對任何中斷都不會起反應。但如果只是將 T 旗標設定為0，則只會禁止軟體 中斷指令 SWI (Software Interrupt)，不會禁止由硬體觸發的中斷。</p>
+<p>SW 中還儲存有『處理器模式』的欄位，M=0 時為『使用者模式』 (user mode) 與 M=1 時為『特權模式』(super mode) 等， 這在作業系統的設計上經常被用來製作安全保護功能。在使用者模式當中，任何設定狀態暫存器 R12 的動作都會被視為是非法的， 這是為了進行保護功能的緣故。但是在特權模式中，允許進行任何動作，包含設定中斷旗標與處理器模式等位元， 通常作業系統會使用特權模式 (M=1)，而一般程式只能處於使用者模式 (M=0)。</p>
+<h3 id="位元組順序"><a href="#位元組順序">位元組順序</a></h3>
+<p>CPU0 採用大者優先 (Big Endian) 的位元組順序 (Byte Ordering)，因此代表值越大的位元組會在記憶體的前面 (低位址處)，代表值小者會在高位址處。</p>
+<p>由於 CPU0 是 32 位元的電腦，因此，一個字組 (Word) 占用 4 個位元組 (Byte)，因此，像 LD R1, [100] 這樣的指令，其實是將記憶體 100-103 中的字組取出，存入到暫存器 R1 當中。</p>
+<p>LDB 與 STB 等指令，其中的 B 是指 Byte，因此，LDB R1, [100] 會將記憶體 100 中的 byte 取出，載入到 R1 當中。但是，由於 R1 的大小是 32 bits，相當於 4個 byte，此時，LDB 與 STB 指令到底是存取四個 byte 當中的哪一個byte呢？這個問題的答案是byte 3，也就是最後的一個 byte。</p>
+<h3 id="中斷程序"><a href="#中斷程序">中斷程序</a></h3>
+<p>CPU0 的中斷為不可重入式中斷，其中斷分為軟體中斷 SWI (Trap) 與硬體中斷 HWI (Interrupt) 兩類。</p>
+<p>硬體中斷發生時，中段代號 INT_ADDR 會從中段線路傳入，此時執行下列動作：</p>
+<ol style="list-style-type: decimal">
+<li>LR=PC; INT=1</li>
+<li>PC=INT_ADDR</li>
+</ol>
+<p>軟體中斷 SWI Cx 發生時，會執行下列動作：</p>
+<ol style="list-style-type: decimal">
+<li>LR=PC; INT=1</li>
+<li>PC=Cx;</li>
+</ol>
+<p>中斷最後可以使用 IRET 返回，返回前會設定允許中斷狀態。</p>
+<ol style="list-style-type: decimal">
+<li>PC=LR; INT=0</li>
+</ol>
+<h2 id="實作cpu0-的指令表"><a href="#實作cpu0-的指令表">實作：CPU0 的指令表</a></h2>
+<p>雖然 CPU0 處理器按理講應該直接以硬體實作，但是我們恐怕不容易直接請「台積電」或「聯電」幫我們燒一顆，因此在實作上我們使用了 FPGA + Verilog + Altera DE2-70 進行 CPU 設計。</p>
+<p>但是電腦光是有硬體的話，仍然是不能使用的，否則您可以試試在 PC 上不要安裝作業系統，然後想辦法使用那台電腦，您肯定是會望著電腦興嘆的。</p>
+<p>因此、就算 CPU 已經設計好了，我們仍然需要「組譯器、編譯器、作業系統」等系統軟體 (System Software)，才能成為一台真正可以用的電腦。</p>
+<p>另外、如果我們能夠設計出「虛擬機」，那麼在這台電腦的硬體還沒有被生產出來之前，我們也能將程式放到「虛擬機」上去執行，因此 我們將會在本書的後半部描述這些「系統軟體」的結構，並且用 JavaScript 與 C 語言各自實作一組軟體系統。</p>
+<p>我們將在下兩章中詳細說明組譯器「AS0.js 」與虛擬機「VM0.js」的實作方法，並詳細的列出原始碼。</p>
+<p>現在、我們將先列出「虛擬機 AS0」與「組譯器 VM0」都會用到的共同部分，也就是「處理器 CPU0.js」與「指令表 opTable.js」 兩個程式的原始碼，並講解程式內容與執行結果。</p>
+<p>在 JavaScript 當中要設計出指令表 opTable.js 非常的簡單，因為 JavaScript 的物件本身就是個符號表， 因此我們只要用 <code>this[op.name] = op</code> 這行指令就能在 opTable 這個建構函數當中，將指令物件插入到表格內。</p>
+<p>檔案：opTable.js</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> c = <span class="fu">require</span>(<span class="st">&quot;./ccc&quot;</span>);
+
+<span class="kw">var</span> Op = <span class="kw">function</span>(line) {
+    <span class="kw">var</span> tokens = <span class="ot">line</span>.<span class="fu">split</span>(<span class="ot">/</span><span class="bn">\s</span><span class="fl">+</span><span class="ot">/</span>);
+    <span class="kw">this</span>.<span class="fu">name</span> = tokens[<span class="dv">0</span>];
+    <span class="kw">this</span>.<span class="fu">id</span>   = <span class="fu">parseInt</span>(tokens[<span class="dv">1</span>], <span class="dv">16</span>);
+    <span class="kw">this</span>.<span class="fu">type</span> = tokens[<span class="dv">2</span>];
+}
+
+<span class="kw">var</span> opTable = <span class="kw">function</span>(opList) {
+  <span class="kw">for</span> (i <span class="kw">in</span>  opList) {
+    <span class="kw">var</span> op = <span class="kw">new</span> <span class="fu">Op</span>(opList[i]);
+    <span class="kw">this</span>[<span class="ot">op</span>.<span class="fu">name</span>] = op;
+  }  
+}
+
+<span class="ot">opTable</span>.<span class="ot">prototype</span>.<span class="fu">ID</span> = <span class="kw">function</span>(op) { 
+  <span class="kw">return</span> <span class="kw">this</span>[op].<span class="fu">id</span>; 
+}
+
+<span class="ot">opTable</span>.<span class="ot">prototype</span>.<span class="fu">dump</span>=<span class="kw">function</span>() {
+    <span class="kw">for</span> (key <span class="kw">in</span> <span class="kw">this</span>) {
+      <span class="kw">var</span> op = <span class="kw">this</span>[key];
+      <span class="kw">if</span> (<span class="kw">typeof</span>(op)!=<span class="st">&quot;function&quot;</span>)
+        <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;%s %s %s&quot;</span>, <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39; &#39;</span>, <span class="ot">op</span>.<span class="fu">name</span>, <span class="dv">8</span>), <span class="ot">c</span>.<span class="fu">hex</span>(<span class="ot">op</span>.<span class="fu">id</span>, <span class="dv">2</span>), <span class="ot">op</span>.<span class="fu">type</span>);
+    }
+}
+
+<span class="ot">module</span>.<span class="fu">exports</span> = opTable;</code></pre>
+<p>在上述程式碼中，每個指令包含了「指令名稱 (name), 指令代碼 (id) 與指令型態 (type)」等三個欄位，舉例而言，當 一個載入指令的字串定義為 <code>&quot;LD 00 L&quot;</code> 時，就會被函數 <code>Op = function(line)</code> 拆解為 { name=&quot;LD&quot;, id=0x00, type=&quot;L&quot; } 這樣的物件，然後新增到指令表當中。</p>
+<p>利用上述的 opTable.js，我們可以輕易的建構出 CPU0 處理器的指令表，以下是 cpu0.js 程式的原始碼，該程式建構出了 CPU0 的完整指令表，包含 「LD, ST, ....., PUSHB, POPB」等真實的指令。</p>
+<p>另外、以下表格當中還包含了「RESW, RESB, WORD, BYTE」等資料定義假指令，其中 RESW 用來保留 n 個 Word，RESB 用來保留 n 個 BYTE， WORD 則用來定義有初始值的整數變數，BYTE 則用來定義有初始值的位元組變數，像是 8 位元整數或字串等。</p>
+<p>檔案：cpu0.js</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> opTable = <span class="fu">require</span>(<span class="st">&quot;./optable&quot;</span>);
+<span class="kw">var</span> opList = [ <span class="st">&quot;LD 00 L&quot;</span>, <span class="st">&quot;ST  01 L&quot;</span>, <span class="st">&quot;LDB 02 L&quot;</span>,  <span class="st">&quot;STB 03 L&quot;</span>, <span class="st">&quot;LDR 04 L&quot;</span>, 
+<span class="st">&quot;STR 05 L&quot;</span>, <span class="st">&quot;LBR 06 L&quot;</span>,  <span class="st">&quot;SBR 07 L&quot;</span>,  <span class="st">&quot;LDI 08 L&quot;</span>, <span class="st">&quot;CMP 10 A&quot;</span>, <span class="st">&quot;MOV 12 A&quot;</span>, 
+<span class="st">&quot;ADD 13 A&quot;</span>,  <span class="st">&quot;SUB 14 A&quot;</span>,  <span class="st">&quot;MUL 15 A&quot;</span>, <span class="st">&quot;DIV 16 A&quot;</span>,  <span class="st">&quot;AND 18 A&quot;</span>, <span class="st">&quot;OR  19 A&quot;</span>,  <span class="st">&quot;XOR 1A A&quot;</span>,  
+<span class="st">&quot;ADDI 1B A&quot;</span>, <span class="st">&quot;ROL 1C A&quot;</span>,  <span class="st">&quot;ROR 1D A&quot;</span>, <span class="st">&quot;SHL 1E A&quot;</span>, <span class="st">&quot;SHR 1F A&quot;</span>,  
+<span class="st">&quot;JEQ 20 J&quot;</span>, <span class="st">&quot;JNE 21 J&quot;</span>,  <span class="st">&quot;JLT 22 J&quot;</span>, <span class="st">&quot;JGT 23 J&quot;</span>, <span class="st">&quot;JLE 24 J&quot;</span>,  <span class="st">&quot;JGE 25 J&quot;</span>, <span class="st">&quot;JMP 26 J&quot;</span>, 
+<span class="st">&quot;SWI 2A J&quot;</span>, <span class="st">&quot;JSUB 2B J&quot;</span>,<span class="st">&quot;RET 2C J&quot;</span>, <span class="st">&quot;PUSH 30 J&quot;</span>, <span class="st">&quot;POP 31 J&quot;</span>,  <span class="st">&quot;PUSHB 32 J&quot;</span>, 
+<span class="st">&quot;POPB 33 J&quot;</span>, <span class="st">&quot;RESW F0 D&quot;</span>, <span class="st">&quot;RESB F1 D&quot;</span>, <span class="st">&quot;WORD F2 D&quot;</span>, <span class="st">&quot;BYTE F3 D&quot;</span>];
+
+<span class="kw">var</span> cpu = { <span class="st">&quot;opTable&quot;</span> : <span class="kw">new</span> <span class="fu">opTable</span>(opList) };
+
+<span class="ot">cpu</span>.<span class="ot">opTable</span>.<span class="fu">dump</span>();
+
+<span class="ot">module</span>.<span class="fu">exports</span> = cpu;</code></pre>
+<p>執行結果：</p>
+<pre><code>D:\Dropbox\Public\oc\code&gt;node cpu0.js
+LD       00 L
+ST       01 L
+LDB      02 L
+STB      03 L
+LDR      04 L
+STR      05 L
+LBR      06 L
+SBR      07 L
+LDI      08 L
+CMP      10 A
+MOV      12 A
+ADD      13 A
+SUB      14 A
+MUL      15 A
+DIV      16 A
+AND      18 A
+OR       19 A
+XOR      1A A
+ADDI     1B A
+ROL      1C A
+ROR      1D A
+SHL      1E A
+SHR      1F A
+JEQ      20 J
+JNE      21 J
+JLT      22 J
+JGT      23 J
+JLE      24 J
+JGE      25 J
+JMP      26 J
+SWI      2A J
+JSUB     2B J
+RET      2C J
+PUSH     30 J
+POP      31 J
+PUSHB    32 J
+POPB     33 J
+RESW     F0 D
+RESB     F1 D
+WORD     F2 D
+BYTE     F3 D
+</code></pre>
+<p>細心的讀者可能會注意到，我們在 opTable.js 當中引入了 ccc.js 這個函式庫，這個函式庫是「開放電腦計畫」當中的常用函數集合， 其原始碼如下所示。</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> util = <span class="fu">require</span>(<span class="st">&quot;util&quot;</span>);
+<span class="kw">var</span> assert = <span class="fu">require</span>(<span class="st">&quot;assert&quot;</span>);
+<span class="kw">var</span> fs = <span class="fu">require</span>(<span class="st">&quot;fs&quot;</span>);
+
+<span class="kw">var</span> c = {};                 <span class="co">// 本模組的傳回物件</span>
+<span class="ot">c</span>.<span class="fu">log</span> = <span class="ot">console</span>.<span class="fu">log</span>;        <span class="co">// 將 console.log 名稱縮短一點</span>
+<span class="ot">c</span>.<span class="fu">format</span> = <span class="ot">util</span>.<span class="fu">format</span>;     <span class="co">// 字串格式化</span>
+<span class="ot">c</span>.<span class="fu">assert</span> = <span class="ot">assert</span>.<span class="fu">ok</span>;       <span class="co">// assert 函數，若不符合條件則程式會停止</span>
+<span class="ot">c</span>.<span class="fu">bits</span> = <span class="kw">function</span>(word, from, to) { <span class="kw">return</span> word &lt;&lt; (<span class="dv">31</span>-to) &gt;&gt;&gt; (<span class="dv">31</span>-to+from); }      <span class="co">// 取得 from 到 to 之間的位元</span>
+<span class="ot">c</span>.<span class="fu">signbits</span> = <span class="kw">function</span>(word, from, to) { <span class="kw">return</span> word &lt;&lt; (<span class="dv">31</span>-to) &gt;&gt; (<span class="dv">31</span>-to+from); }   <span class="co">// 取得 from 到 to 之間的位元</span>
+<span class="ot">c</span>.<span class="fu">nonull</span> = <span class="kw">function</span>(o) { <span class="kw">if</span> (o == <span class="kw">null</span>) <span class="kw">return</span> <span class="st">&quot;&quot;</span>; <span class="kw">else</span> <span class="kw">return</span> o; }                 <span class="co">// 將 null 改為空字串傳回</span>
+
+<span class="ot">c</span>.<span class="fu">space</span> = <span class="st">&quot;                                                                      &quot;</span>; <span class="co">// 空白字串，dup() 函數中使用到的。</span>
+<span class="ot">c</span>.<span class="fu">dup</span> = <span class="kw">function</span>(ch, n) {           <span class="co">// 傳回 ch 重複 n 次的字串；範例：dup(&#39;x&#39;, 3) = &#39;xxx&#39;</span>
+  <span class="ot">assert</span>.<span class="fu">ok</span>(n &lt; <span class="ot">c</span>.<span class="ot">space</span>.<span class="fu">length</span>);
+  <span class="kw">return</span> <span class="ot">c</span>.<span class="ot">space</span>.<span class="fu">substr</span>(<span class="dv">0</span>, n).<span class="fu">replace</span>(<span class="ot">/ /g</span>, ch); 
+}
+
+<span class="ot">c</span>.<span class="fu">fill</span> = <span class="kw">function</span>(ch, o, len) {     <span class="co">// 將字串填滿 ch，例如：fill(&#39; &#39;, 35, 5) = &#39;35   &#39;; fill(&#39;0&#39;, 35, -5) = &#39;00035&#39;;</span>
+  <span class="kw">var</span> str = <span class="ot">o</span>.<span class="fu">toString</span>();
+  <span class="kw">if</span> (len &gt;= <span class="dv">0</span>)
+    <span class="kw">return</span> str+<span class="ot">c</span>.<span class="fu">dup</span>(ch, len-<span class="ot">str</span>.<span class="fu">length</span>);
+  <span class="kw">else</span>
+    <span class="kw">return</span> <span class="ot">c</span>.<span class="fu">dup</span>(ch, -len-<span class="ot">str</span>.<span class="fu">length</span>)+str;
+}
+
+<span class="ot">c</span>.<span class="fu">base</span> = <span class="kw">function</span>(n, b, len) {      <span class="co">// 將數字 n 轉換為以 b 為基底的字串；例如：base(31, 16, 5) = &#39;0001F&#39;;</span>
+  <span class="kw">var</span> str = <span class="ot">n</span>.<span class="fu">toString</span>(b);
+  <span class="kw">return</span> <span class="ot">c</span>.<span class="fu">dup</span>(<span class="st">&#39;0&#39;</span>, len-<span class="ot">str</span>.<span class="fu">length</span>)+str;
+}
+
+<span class="ot">c</span>.<span class="fu">hex</span> = <span class="kw">function</span>(n, len) {          <span class="co">// 將數字 n 轉換 16 進位；例如：hex(31, 5) = &#39;0001F&#39;; hex(-3, 5) = &#39;FFFFD&#39;</span>
+  <span class="kw">var</span> str = (n &lt; <span class="dv">0</span> ? (<span class="bn">0xFFFFFFFF</span> + n + <span class="dv">1</span>) : n).<span class="fu">toString</span>(<span class="dv">16</span>).<span class="fu">toUpperCase</span>();
+  <span class="kw">if</span> (n &lt; <span class="dv">0</span>)
+    <span class="kw">return</span> <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39;F&#39;</span>, str, -len).<span class="fu">substr</span>(-len);
+  <span class="kw">else</span>
+    <span class="kw">return</span> <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39;0&#39;</span>, str, -len).<span class="fu">substr</span>(-len);
+}
+
+<span class="ot">c</span>.<span class="fu">str2hex</span> = <span class="kw">function</span>(str) {         <span class="co">// 將字串轉為 16 進位碼，例如：str2hex(&#39;Hello!&#39;) = &#39;48656C6C6F21&#39;</span>
+  <span class="kw">var</span> hex=<span class="st">&quot;&quot;</span>;
+  <span class="kw">for</span> (i=<span class="dv">0</span>; i&lt;<span class="ot">str</span>.<span class="fu">length</span>; i++) {
+    <span class="kw">var</span> code = <span class="ot">str</span>.<span class="fu">charCodeAt</span>(i);
+    hex += <span class="ot">c</span>.<span class="fu">hex</span>(code, <span class="dv">2</span>);
+  }
+  <span class="kw">return</span> hex;
+}
+
+<span class="ot">c</span>.<span class="fu">error</span> = <span class="kw">function</span>(msg, err) {
+   <span class="ot">c</span>.<span class="fu">log</span>(msg);
+   <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;Error : (%s):%s&quot;</span>, <span class="ot">err</span>.<span class="fu">name</span>, <span class="ot">err</span>.<span class="fu">message</span>);
+   <span class="ot">c</span>.<span class="fu">log</span>(<span class="ot">err</span>.<span class="fu">stack</span>);
+   <span class="ot">process</span>.<span class="fu">exit</span>(<span class="dv">1</span>);
+}
+
+<span class="ot">c</span>.<span class="fu">test</span> = <span class="kw">function</span>() {
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;bits(0xF3A4, 4, 7)=%s&quot;</span>, <span class="ot">c</span>.<span class="fu">hex</span>(<span class="ot">c</span>.<span class="fu">bits</span>(<span class="bn">0xF3A4</span>, <span class="dv">4</span>, <span class="dv">7</span>), <span class="dv">4</span>));
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;dup(&#39;x&#39;, 3)=%s&quot;</span>, <span class="ot">c</span>.<span class="fu">dup</span>(<span class="st">&#39;x&#39;</span>, <span class="dv">3</span>));
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;fill(&#39;0&#39;, 35, -5)=%s&quot;</span>, <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39;0&#39;</span>, <span class="dv">35</span>, -<span class="dv">5</span>));
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;base(100, 16, 5)=%s&quot;</span>, <span class="ot">c</span>.<span class="fu">base</span>(<span class="dv">100</span>, <span class="dv">16</span>, <span class="dv">5</span>));
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;hex(-100)=%s&quot;</span>, <span class="ot">c</span>.<span class="fu">hex</span>(-<span class="dv">100</span>, <span class="dv">6</span>));
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;str2hex(Hello!)=%s&quot;</span>, <span class="ot">c</span>.<span class="fu">str2hex</span>(<span class="st">&quot;Hello!&quot;</span>));
+}
+
+<span class="ot">c</span>.<span class="fu">test</span>();
+
+<span class="ot">module</span>.<span class="fu">exports</span> = c;</code></pre>
+<p>以上程式的單元測試 c.test() 執行結果如下</p>
+<pre><code>D:\Dropbox\Public\oc\code&gt;node ccc
+bits(0xF3A4, 4, 7)=000A
+dup(&#39;x&#39;, 3)=xxx
+fill(&#39;0&#39;, 35, -5)=00035
+base(100, 16, 5)=00064
+hex(-100)=FFFF9C
+str2hex(Hello!)=48656C6C6F21</code></pre>
+<h1 id="虛擬機---vm0"><a href="#虛擬機---vm0">虛擬機 - vm0</a></h1>
+<p>在前幾章中，我們介紹了 CPU0 處理器的指令集，以及組譯器的實作方式，文章網址如下：</p>
+<p>現在，我們將接焦點轉移到虛擬機 VM0 的實作上，說明一個最簡易的虛擬機是如何設計出來的。</p>
+<h2 id="組譯範例"><a href="#組譯範例">組譯範例</a></h2>
+<p>首先、讓讀者回顧一下，在上一篇文章中，我們設計了一個組譯器，可以組譯像以下的組合語言程式。</p>
+<p>組合語言：<a href="https://dl.dropboxusercontent.com/u/101584453/pmag/201309/code/oc/sum.as0">sum.as0</a></p>
+<pre><code>        LD     R1, sum      ; R1 = sum = 0
+        LD     R2, i        ; R2 = i = 1
+        LDI    R3, 10       ; R3 = 10
+FOR:    CMP    R2, R3       ; if (R2 &gt; R3)
+        JGT    EXIT         ;   goto EXIT
+        ADD    R1, R1, R2   ; R1 = R1 + R2 (sum = sum + i)
+        ADDI   R2, R2, 1    ; R2 = R2 + 1  ( i  = i + 1)
+        JMP    FOR          ; goto FOR
+EXIT:   ST     R1, sum      ; sum = R1
+        ST     R2, i        ; i = R2
+        LD     R9, msgptr   ; R9= pointer(msg) = &amp;msg
+        SWI    3            ; SWI 3 : 印出 R9 (=&amp;msg) 中的字串
+        MOV    R9, R1       ; R9 = R1 = sum
+        SWI    4            ; SWI 2 : 印出 R9 (=R1=sum) 中的整數
+        RET                 ; return 返回上一層呼叫函數
+i:      RESW   1            ; int i
+sum:    WORD   0            ; int sum=0
+msg:    BYTE   &quot;1+...+10=&quot;, 0   ; char *msg = &quot;sum=&quot;
+msgptr: WORD   msg          ; char &amp;msgptr = &amp;msg</code></pre>
+<p>我們可以用 AS0 組譯器對這樣的 CPU0 組合語言進行組譯，以下是組譯過程與結果，會輸出機器碼到目的檔中。</p>
+<pre><code>D:\Dropbox\Public\oc\code&gt;node as0 sum.as0 sum.ob0
+...
+...
+=================SAVE OBJ FILE================
+
+00 :  001F003C 002F0034 0830000A 10230000
+10 :  2300000C 13112000 1B220001 26FFFFEC
+20 :  011F001C 012F0014 009F001D 2A000003
+30 :  12910000 2A000002 2C000000 00000000
+40 :  00000000 73756D3D 00000000 44</code></pre>
+<p>接著、我們就可以用虛擬機 VM0 來執行這個目的檔，我們可以選擇用預設不傾印的方式，得到以下的簡要執行結果。</p>
+<p>虛擬機執行過程 (不傾印)</p>
+<pre><code>D:\oc\code&gt;node vm0 sum.ob0
+1+...+10=55</code></pre>
+<p>也可以用加上 -d 參數的方式，傾印每一個指令的執行過程，如下所示：</p>
+<p>虛擬機執行過程 (詳細傾印)</p>
+<pre><code>D:\oc\code&gt;node vm0 sum.ob0 -d
+
+00 :  001F003C 002F0034 0830000A 10230000
+10 :  2300000C 13112000 1B220001 26FFFFEC
+20 :  011F001C 012F0014 009F0022 2A000003
+30 :  12910000 2A000004 2C000000 00000000
+40 :  00000000 312B2E2E 2E2B3130 3D000000
+50 :  0044
+PC=0000 IR=001F003C SW=00000000 R[01]=0x00000000=0
+PC=0004 IR=002F0034 SW=00000000 R[02]=0x00000000=0
+PC=0008 IR=0830000A SW=00000000 R[03]=0x0000000A=10
+PC=000C IR=10230000 SW=80000000 R[0C]=0x80000000=-2147483648
+PC=0010 IR=2300000C SW=80000000 R[00]=0x00000000=0
+PC=0014 IR=13112000 SW=80000000 R[01]=0x00000000=0
+PC=0018 IR=1B220001 SW=80000000 R[02]=0x00000001=1
+PC=001C IR=26FFFFEC SW=80000000 R[0F]=0x0000000C=12
+PC=000C IR=10230000 SW=80000000 R[0C]=0x80000000=-2147483648
+PC=0010 IR=2300000C SW=80000000 R[00]=0x00000000=0
+PC=0014 IR=13112000 SW=80000000 R[01]=0x00000001=1
+PC=0018 IR=1B220001 SW=80000000 R[02]=0x00000002=2
+PC=001C IR=26FFFFEC SW=80000000 R[0F]=0x0000000C=12
+PC=000C IR=10230000 SW=80000000 R[0C]=0x80000000=-2147483648
+PC=0010 IR=2300000C SW=80000000 R[00]=0x00000000=0
+PC=0014 IR=13112000 SW=80000000 R[01]=0x00000003=3
+PC=0018 IR=1B220001 SW=80000000 R[02]=0x00000003=3
+PC=001C IR=26FFFFEC SW=80000000 R[0F]=0x0000000C=12
+PC=000C IR=10230000 SW=80000000 R[0C]=0x80000000=-2147483648
+PC=0010 IR=2300000C SW=80000000 R[00]=0x00000000=0
+PC=0014 IR=13112000 SW=80000000 R[01]=0x00000006=6
+PC=0018 IR=1B220001 SW=80000000 R[02]=0x00000004=4
+PC=001C IR=26FFFFEC SW=80000000 R[0F]=0x0000000C=12
+PC=000C IR=10230000 SW=80000000 R[0C]=0x80000000=-2147483648
+PC=0010 IR=2300000C SW=80000000 R[00]=0x00000000=0
+PC=0014 IR=13112000 SW=80000000 R[01]=0x0000000A=10
+PC=0018 IR=1B220001 SW=80000000 R[02]=0x00000005=5
+PC=001C IR=26FFFFEC SW=80000000 R[0F]=0x0000000C=12
+PC=000C IR=10230000 SW=80000000 R[0C]=0x80000000=-2147483648
+PC=0010 IR=2300000C SW=80000000 R[00]=0x00000000=0
+PC=0014 IR=13112000 SW=80000000 R[01]=0x0000000F=15
+PC=0018 IR=1B220001 SW=80000000 R[02]=0x00000006=6
+PC=001C IR=26FFFFEC SW=80000000 R[0F]=0x0000000C=12
+PC=000C IR=10230000 SW=80000000 R[0C]=0x80000000=-2147483648
+PC=0010 IR=2300000C SW=80000000 R[00]=0x00000000=0
+PC=0014 IR=13112000 SW=80000000 R[01]=0x00000015=21
+PC=0018 IR=1B220001 SW=80000000 R[02]=0x00000007=7
+PC=001C IR=26FFFFEC SW=80000000 R[0F]=0x0000000C=12
+PC=000C IR=10230000 SW=80000000 R[0C]=0x80000000=-2147483648
+PC=0010 IR=2300000C SW=80000000 R[00]=0x00000000=0
+PC=0014 IR=13112000 SW=80000000 R[01]=0x0000001C=28
+PC=0018 IR=1B220001 SW=80000000 R[02]=0x00000008=8
+PC=001C IR=26FFFFEC SW=80000000 R[0F]=0x0000000C=12
+PC=000C IR=10230000 SW=80000000 R[0C]=0x80000000=-2147483648
+PC=0010 IR=2300000C SW=80000000 R[00]=0x00000000=0
+PC=0014 IR=13112000 SW=80000000 R[01]=0x00000024=36
+PC=0018 IR=1B220001 SW=80000000 R[02]=0x00000009=9
+PC=001C IR=26FFFFEC SW=80000000 R[0F]=0x0000000C=12
+PC=000C IR=10230000 SW=80000000 R[0C]=0x80000000=-2147483648
+PC=0010 IR=2300000C SW=80000000 R[00]=0x00000000=0
+PC=0014 IR=13112000 SW=80000000 R[01]=0x0000002D=45
+PC=0018 IR=1B220001 SW=80000000 R[02]=0x0000000A=10
+PC=001C IR=26FFFFEC SW=80000000 R[0F]=0x0000000C=12
+PC=000C IR=10230000 SW=40000000 R[0C]=0x40000000=1073741824
+PC=0010 IR=2300000C SW=40000000 R[00]=0x00000000=0
+PC=0014 IR=13112000 SW=40000000 R[01]=0x00000037=55
+PC=0018 IR=1B220001 SW=40000000 R[02]=0x0000000B=11
+PC=001C IR=26FFFFEC SW=40000000 R[0F]=0x0000000C=12
+PC=000C IR=10230000 SW=00000000 R[0C]=0x00000000=0
+PC=0010 IR=2300000C SW=00000000 R[00]=0x00000000=0
+m[0040]=55
+PC=0020 IR=011F001C SW=00000000 R[01]=0x00000037=55
+m[003C]=11
+PC=0024 IR=012F0014 SW=00000000 R[02]=0x0000000B=11
+PC=0028 IR=009F0022 SW=00000000 R[09]=0x00000044=68
+1+...+10=PC=002C IR=2A000003 SW=00000000 R[00]=0x00000000=0
+PC=0030 IR=12910000 SW=00000000 R[09]=0x00000037=55
+55PC=0034 IR=2A000004 SW=00000000 R[00]=0x00000000=0
+PC=0038 IR=2C000000 SW=00000000 R[00]=0x00000000=0
+</code></pre>
+<p>如果您詳細追蹤上述過程，就能更清楚的看出每個指令執行時，所造成的暫存器變化，舉例而言，您可以看到程式 在 PC=000C 到 PC=001C 之間循環了很多次，最後一次的循環印出下列內容。</p>
+<pre><code>PC=000C IR=10230000 SW=40000000 R[0C]=0x40000000=1073741824
+PC=0010 IR=2300000C SW=40000000 R[00]=0x00000000=0
+PC=0014 IR=13112000 SW=40000000 R[01]=0x00000037=55
+PC=0018 IR=1B220001 SW=40000000 R[02]=0x0000000B=11
+PC=001C IR=26FFFFEC SW=40000000 R[0F]=0x0000000C=12
+PC=000C IR=10230000 SW=00000000 R[0C]=0x00000000=0
+PC=0010 IR=2300000C SW=00000000 R[00]=0x00000000=0
+m[0040]=55</code></pre>
+<p>其中得到 R[01]=0x00000037=55 的計算結果，正是整個程式計算 1+2+...+10=55 的結果。</p>
+<h2 id="vm0-虛擬機設計"><a href="#vm0-虛擬機設計">VM0 虛擬機設計</a></h2>
+<p>接著、我們要來看看虛擬機 VM0 是如何設計的，但是在這之前，先讓我們看看虛擬機當中一個重要的資料結構， OpTable 指令表這個物件，其程式碼如下：</p>
+<p>檔案：<a href="https://dl.dropboxusercontent.com/u/101584453/pmag/201309/code/oc/opTable.js">opTable.js</a></p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> c = <span class="fu">require</span>(<span class="st">&quot;./ccc&quot;</span>);
+
+<span class="kw">var</span> Op = <span class="kw">function</span>(line) {
+    <span class="kw">var</span> tokens = <span class="ot">line</span>.<span class="fu">split</span>(<span class="ot">/</span><span class="bn">\s</span><span class="fl">+</span><span class="ot">/</span>);
+    <span class="kw">this</span>.<span class="fu">name</span> = tokens[<span class="dv">0</span>];
+    <span class="kw">this</span>.<span class="fu">id</span>   = <span class="fu">parseInt</span>(tokens[<span class="dv">1</span>], <span class="dv">16</span>);
+    <span class="kw">this</span>.<span class="fu">type</span> = tokens[<span class="dv">2</span>];
+}
+
+<span class="kw">var</span> opTable = <span class="kw">function</span>(opList) {
+  <span class="kw">for</span> (i <span class="kw">in</span>  opList) {
+    <span class="kw">var</span> op = <span class="kw">new</span> <span class="fu">Op</span>(opList[i]);
+    <span class="kw">this</span>[<span class="ot">op</span>.<span class="fu">name</span>] = op;
+  }  
+}
+
+<span class="ot">opTable</span>.<span class="ot">prototype</span>.<span class="fu">ID</span> = <span class="kw">function</span>(op) { 
+  <span class="kw">return</span> <span class="kw">this</span>[op].<span class="fu">id</span>; 
+}
+
+<span class="ot">opTable</span>.<span class="ot">prototype</span>.<span class="fu">dump</span>=<span class="kw">function</span>() {
+    <span class="kw">for</span> (key <span class="kw">in</span> <span class="kw">this</span>) {
+      <span class="kw">var</span> op = <span class="kw">this</span>[key];
+      <span class="kw">if</span> (<span class="kw">typeof</span>(op)!=<span class="st">&quot;function&quot;</span>)
+        <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;%s %s %s&quot;</span>, <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39; &#39;</span>, <span class="ot">op</span>.<span class="fu">name</span>, <span class="dv">8</span>), <span class="ot">c</span>.<span class="fu">hex</span>(<span class="ot">op</span>.<span class="fu">id</span>, <span class="dv">2</span>), <span class="ot">op</span>.<span class="fu">type</span>);
+    }
+}
+
+<span class="ot">module</span>.<span class="fu">exports</span> = opTable;</code></pre>
+<p>然後、我們利用上述的 OpTable 模組，加入了 CPU0 的指令集之後，建出了 CPU0 這個代表處理器的模組， 程式碼如下。</p>
+<p>檔案：<a href="https://dl.dropboxusercontent.com/u/101584453/pmag/201309/code/oc/cpu0.js">cpu0.js</a></p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> opTable = <span class="fu">require</span>(<span class="st">&quot;./optable&quot;</span>);
+<span class="kw">var</span> opList = [ <span class="st">&quot;LD 00 L&quot;</span>, <span class="st">&quot;ST  01 L&quot;</span>, <span class="st">&quot;LDB 02 L&quot;</span>,  <span class="st">&quot;STB 03 L&quot;</span>, <span class="st">&quot;LDR 04 L&quot;</span>, 
+<span class="st">&quot;STR 05 L&quot;</span>, <span class="st">&quot;LBR 06 L&quot;</span>,  <span class="st">&quot;SBR 07 L&quot;</span>,  <span class="st">&quot;LDI 08 L&quot;</span>, <span class="st">&quot;CMP 10 A&quot;</span>, <span class="st">&quot;MOV 12 A&quot;</span>, 
+<span class="st">&quot;ADD 13 A&quot;</span>,  <span class="st">&quot;SUB 14 A&quot;</span>,  <span class="st">&quot;MUL 15 A&quot;</span>, <span class="st">&quot;DIV 16 A&quot;</span>,  <span class="st">&quot;AND 18 A&quot;</span>, <span class="st">&quot;OR  19 A&quot;</span>,  <span class="st">&quot;XOR 1A A&quot;</span>,  
+<span class="st">&quot;ADDI 1B A&quot;</span>, <span class="st">&quot;ROL 1C A&quot;</span>,  <span class="st">&quot;ROR 1D A&quot;</span>, <span class="st">&quot;SHL 1E A&quot;</span>, <span class="st">&quot;SHR 1F A&quot;</span>,  
+<span class="st">&quot;JEQ 20 J&quot;</span>, <span class="st">&quot;JNE 21 J&quot;</span>,  <span class="st">&quot;JLT 22 J&quot;</span>, <span class="st">&quot;JGT 23 J&quot;</span>, <span class="st">&quot;JLE 24 J&quot;</span>,  <span class="st">&quot;JGE 25 J&quot;</span>, <span class="st">&quot;JMP 26 J&quot;</span>, 
+<span class="st">&quot;SWI 2A J&quot;</span>, <span class="st">&quot;JSUB 2B J&quot;</span>,<span class="st">&quot;RET 2C J&quot;</span>, <span class="st">&quot;PUSH 30 J&quot;</span>, <span class="st">&quot;POP 31 J&quot;</span>,  <span class="st">&quot;PUSHB 32 J&quot;</span>, 
+<span class="st">&quot;POPB 33 J&quot;</span>, <span class="st">&quot;RESW F0 D&quot;</span>, <span class="st">&quot;RESB F1 D&quot;</span>, <span class="st">&quot;WORD F2 D&quot;</span>, <span class="st">&quot;BYTE F3 D&quot;</span>];
+
+<span class="kw">var</span> cpu = { <span class="st">&quot;opTable&quot;</span> : <span class="kw">new</span> <span class="fu">opTable</span>(opList) };
+
+<span class="kw">if</span> (<span class="ot">process</span>.<span class="fu">argv</span>[<span class="dv">2</span>] == <span class="st">&quot;-d&quot;</span>)
+    <span class="ot">cpu</span>.<span class="ot">opTable</span>.<span class="fu">dump</span>();
+
+<span class="ot">module</span>.<span class="fu">exports</span> = cpu;</code></pre>
+<p>有了上述的兩個模組作為基礎，我們就可以開始撰寫虛擬機 VM0 了，以下是其原始程式碼。</p>
+<p>檔案：<a href="https://dl.dropboxusercontent.com/u/101584453/pmag/201309/code/oc/vm0.js">vm0.js</a></p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> c = <span class="fu">require</span>(<span class="st">&quot;./ccc&quot;</span>);
+<span class="kw">var</span> cpu1 = <span class="fu">require</span>(<span class="st">&quot;./cpu0&quot;</span>);
+<span class="kw">var</span> Memory = <span class="fu">require</span>(<span class="st">&quot;./memory&quot;</span>);
+
+<span class="kw">var</span> isDump = <span class="ot">process</span>.<span class="fu">argv</span>[<span class="dv">3</span>] == <span class="st">&quot;-d&quot;</span>;
+
+<span class="kw">var</span> IR = <span class="dv">16</span>, PC = <span class="dv">15</span>, LR = <span class="dv">14</span>, SP = <span class="dv">13</span>, SW = <span class="dv">12</span>;
+<span class="kw">var</span> ID = <span class="kw">function</span>(op) { <span class="kw">return</span> <span class="ot">cpu1</span>.<span class="fu">opTable</span>[op].<span class="fu">id</span>; }
+
+<span class="kw">var</span> run = <span class="kw">function</span>(objFile) {
+    R = [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>, <span class="dv">10</span>, <span class="dv">11</span>, <span class="dv">0</span>, <span class="dv">13</span>, -<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">16</span>];
+    m = <span class="kw">new</span> <span class="fu">Memory</span>(<span class="dv">1</span>);
+    <span class="ot">m</span>.<span class="fu">load</span>(objFile);
+    <span class="kw">if</span> (isDump) <span class="ot">m</span>.<span class="fu">dump</span>();
+    <span class="kw">var</span> stop = <span class="kw">false</span>;
+    <span class="kw">while</span> (!stop) {                                          <span class="co">// 如果尚未結束</span>
+      <span class="kw">var</span> tpc = R[PC];
+      R[<span class="dv">0</span>] = <span class="dv">0</span>;                                              <span class="co">// R[0] 永遠為 0</span>
+      R[IR] = <span class="ot">m</span>.<span class="fu">geti</span>(R[PC]);                                 <span class="co">// 指令擷取，IR=[PC..PC+3]</span>
+      R[PC] += <span class="dv">4</span>;                                            <span class="co">// 擷取完將 PC 加 4，指向下一個指令</span>
+      <span class="kw">var</span> op = <span class="ot">c</span>.<span class="fu">bits</span>(R[IR], <span class="dv">24</span>, <span class="dv">31</span>);                        <span class="co">// 取得 op 欄位，IR[24..31]</span>
+      <span class="kw">var</span> ra = <span class="ot">c</span>.<span class="fu">bits</span>(R[IR], <span class="dv">20</span>, <span class="dv">23</span>);                        <span class="co">// 取得 ra 欄位，IR[20..23]</span>
+      <span class="kw">var</span> rb = <span class="ot">c</span>.<span class="fu">bits</span>(R[IR], <span class="dv">16</span>, <span class="dv">19</span>);                        <span class="co">// 取得 rb 欄位，IR[16..19]</span>
+      <span class="kw">var</span> rc = <span class="ot">c</span>.<span class="fu">bits</span>(R[IR], <span class="dv">12</span>, <span class="dv">15</span>);                        <span class="co">// 取得 rc 欄位，IR[12..15]</span>
+      <span class="kw">var</span> c24= <span class="ot">c</span>.<span class="fu">signbits</span>(R[IR], <span class="dv">0</span>,  <span class="dv">23</span>);                    <span class="co">// 取得 24 位元的 cx</span>
+      <span class="kw">var</span> c16= <span class="ot">c</span>.<span class="fu">signbits</span>(R[IR], <span class="dv">0</span>,  <span class="dv">15</span>);                    <span class="co">// 取得 16 位元的 cx</span>
+      <span class="kw">var</span> c5 = <span class="ot">c</span>.<span class="fu">bits</span>(R[IR], <span class="dv">0</span>,   <span class="dv">4</span>);                        <span class="co">// 取得 16 位元的 cx</span>
+      <span class="kw">var</span> addr  = R[rb]+c16;
+      <span class="kw">var</span> raddr = R[rb]+R[rc];                               <span class="co">// 取得位址[Rb+Rc]                          </span>
+      <span class="kw">var</span> N  = <span class="ot">c</span>.<span class="fu">bits</span>(R[SW], <span class="dv">31</span>, <span class="dv">31</span>);
+      <span class="kw">var</span> Z  = <span class="ot">c</span>.<span class="fu">bits</span>(R[SW], <span class="dv">30</span>, <span class="dv">30</span>);
+<span class="co">//      c.log(&quot;IR=%s ra=%d rb=%d rc=%d c24=%s c16=%s addr=%s&quot;, c.hex(R[IR], 8), ra, rb, rc, c.hex(c24, 6), c.hex(c16, 4), c.hex(addr, 8))</span>
+      <span class="kw">switch</span> (op) {                                          <span class="co">// 根據op執行動作</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;LD&quot;</span>) : R[ra] = <span class="ot">m</span>.<span class="fu">geti</span>(addr); <span class="kw">break</span>;         <span class="co">// 處理 LD 指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;ST&quot;</span>) :                                      <span class="co">// 處理 ST 指令</span>
+          <span class="ot">m</span>.<span class="fu">seti</span>(addr, R[ra]); 
+          <span class="kw">if</span> (isDump) <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;m[%s]=%s&quot;</span>, <span class="ot">c</span>.<span class="fu">hex</span>(addr,<span class="dv">4</span>), <span class="ot">m</span>.<span class="fu">geti</span>(addr)); 
+          <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;LDB&quot;</span>): R[ra] = <span class="ot">m</span>.<span class="fu">getb</span>(addr); <span class="kw">break</span>;         <span class="co">// 處理 LDB 指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;STB&quot;</span>): <span class="ot">m</span>.<span class="fu">setb</span>(addr, R[ra]); <span class="kw">break</span>;          <span class="co">// 處理 STB 指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;LDR&quot;</span>): R[ra] = <span class="ot">m</span>.<span class="fu">geti</span>(raddr); <span class="kw">break</span>;        <span class="co">// 處理 LDR 指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;STR&quot;</span>): <span class="ot">m</span>.<span class="fu">seti</span>(raddr, R[ra]); <span class="kw">break</span>;         <span class="co">// 處理 STR 指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;LBR&quot;</span>): R[ra] = <span class="ot">m</span>.<span class="fu">getb</span>(raddr); <span class="kw">break</span>;        <span class="co">// 處理 LBR 指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;SBR&quot;</span>): <span class="ot">m</span>.<span class="fu">setb</span>(raddr, R[ra]); <span class="kw">break</span>;         <span class="co">// 處理 SBR 指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;LDI&quot;</span>): R[ra] = c16; <span class="kw">break</span>;                  <span class="co">// 處理 LDI 指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;CMP&quot;</span>): {                                    <span class="co">// 處理 CMP指令，根據比較結果，設定 N,Z 旗標 </span>
+          <span class="kw">if</span> (R[ra] &gt; R[rb]) {                               <span class="co">// &gt; : SW(N=0, Z=0)</span>
+            R[SW] &amp;= <span class="bn">0x3FFFFFFF</span>;                             <span class="co">// N=0, Z=0</span>
+          } <span class="kw">else</span> <span class="kw">if</span> (R[ra] &lt; R[rb]) {                        <span class="co">// &lt; : SW(N=1, Z=0, ....)                                                </span>
+            R[SW] |= <span class="bn">0x80000000</span>;                             <span class="co">// N=1;</span>
+            R[SW] &amp;= <span class="bn">0xBFFFFFFF</span>;                             <span class="co">// Z=0;</span>
+          } <span class="kw">else</span> {                                           <span class="co">// = : SW(N=0, Z=1)                      </span>
+            R[SW] &amp;= <span class="bn">0x7FFFFFFF</span>;                             <span class="co">// N=0;</span>
+            R[SW] |= <span class="bn">0x40000000</span>;                             <span class="co">// Z=1;</span>
+          }
+          ra = <span class="dv">12</span>;
+          <span class="kw">break</span>;                                                                                        
+        }
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;MOV&quot;</span>): R[ra] = R[rb]; <span class="kw">break</span>;                <span class="co">// 處理MOV指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;ADD&quot;</span>): R[ra] = R[rb]+R[rc]; <span class="kw">break</span>;          <span class="co">// 處理ADD指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;SUB&quot;</span>): R[ra] = R[rb]-R[rc]; <span class="kw">break</span>;          <span class="co">// 處理SUB指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;MUL&quot;</span>): R[ra] = R[rb]*R[rc]; <span class="kw">break</span>;          <span class="co">// 處理MUL指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;DIV&quot;</span>): R[ra] = R[rb]/R[rc]; <span class="kw">break</span>;          <span class="co">// 處理DIV指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;AND&quot;</span>): R[ra] = R[rb]&amp;R[rc]; <span class="kw">break</span>;          <span class="co">// 處理AND指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;OR&quot;</span>) : R[ra] = R[rb]|R[rc]; <span class="kw">break</span>;          <span class="co">// 處理OR指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;XOR&quot;</span>): R[ra] = R[rb]^R[rc]; <span class="kw">break</span>;          <span class="co">// 處理XOR指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;SHL&quot;</span>): R[ra] = R[rb]&lt;&lt;c5; <span class="kw">break</span>;            <span class="co">// 處理SHL指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;SHR&quot;</span>): R[ra] = R[rb]&gt;&gt;c5; <span class="kw">break</span>;            <span class="co">// 處理SHR指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;ADDI&quot;</span>):R[ra] = R[rb] + c16; <span class="kw">break</span>;          <span class="co">// 處理 ADDI 指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;JEQ&quot;</span>): <span class="kw">if</span> (Z==<span class="dv">1</span>) R[PC] += c24; <span class="kw">break</span>;       <span class="co">// 處理JEQ指令 Z=1</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;JNE&quot;</span>): <span class="kw">if</span> (Z==<span class="dv">0</span>) R[PC] += c24; <span class="kw">break</span>;       <span class="co">// 處理JNE指令 Z=0 </span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;JLT&quot;</span>): <span class="kw">if</span> (N==<span class="dv">1</span>&amp;&amp;Z==<span class="dv">0</span>) R[PC] += c24; <span class="kw">break</span>; <span class="co">// 處理JLT指令 NZ=10 </span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;JGT&quot;</span>): <span class="kw">if</span> (N==<span class="dv">0</span>&amp;&amp;Z==<span class="dv">0</span>) R[PC] += c24; <span class="kw">break</span>; <span class="co">// 處理JGT指令 NZ=00</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;JLE&quot;</span>): <span class="kw">if</span> ((N==<span class="dv">1</span>&amp;&amp;Z==<span class="dv">0</span>)||(N==<span class="dv">0</span>&amp;&amp;Z==<span class="dv">1</span>)) R[PC]+=c24; <span class="kw">break</span>; <span class="co">// 處理JLE指令 NZ=10 or 01</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;JGE&quot;</span>): <span class="kw">if</span> ((N==<span class="dv">0</span>&amp;&amp;Z==<span class="dv">0</span>)||(N==<span class="dv">0</span>&amp;&amp;Z==<span class="dv">1</span>)) R[PC]+=c24; <span class="kw">break</span>; <span class="co">// 處理JGE指令 NZ=00 or 01</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;JMP&quot;</span>): R[PC]+=c24; <span class="kw">break</span>;                   <span class="co">// 處理JMP指令                             </span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;SWI&quot;</span>):                                      <span class="co">// 處理SWI指令</span>
+            <span class="kw">switch</span> (c24) {
+                <span class="kw">case</span> <span class="dv">3</span>: <span class="ot">c</span>.<span class="fu">printf</span>(<span class="st">&quot;%s&quot;</span>, <span class="ot">m</span>.<span class="fu">getstr</span>(R[<span class="dv">9</span>])); <span class="kw">break</span>;
+                <span class="kw">case</span> <span class="dv">4</span>: <span class="ot">c</span>.<span class="fu">printf</span>(<span class="st">&quot;%d&quot;</span>, R[<span class="dv">9</span>]); <span class="kw">break</span>;
+                <span class="kw">default</span>: 
+                    <span class="kw">var</span> emsg = <span class="ot">c</span>.<span class="fu">format</span>(<span class="st">&quot;SWI cx=%d not found!&quot;</span>, c24); 
+                    <span class="ot">c</span>.<span class="fu">error</span>(emsg, <span class="kw">null</span>); 
+                    <span class="kw">break</span>;
+            }
+            <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;JSUB&quot;</span>):R[LR] = R[PC]; R[PC]+=c24; <span class="kw">break</span>;    <span class="co">// 處理JSUB指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;RET&quot;</span>): <span class="kw">if</span> (R[LR]&lt;<span class="dv">0</span>) stop=<span class="kw">true</span>; <span class="kw">else</span> R[PC]=LR; <span class="kw">break</span>; <span class="co">// 處理RET指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;PUSH&quot;</span>):R[SP]-=<span class="dv">4</span>; R[ra]=<span class="ot">m</span>.<span class="fu">geti</span>(addr); <span class="ot">m</span>.<span class="fu">seti</span>(R[SP], R[ra]); <span class="kw">break</span>; <span class="co">// 處理PUSH指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;POP&quot;</span>): R[ra] = <span class="ot">m</span>.<span class="fu">geti</span>(R[SP]); R[SP]+=<span class="dv">4</span>; <span class="kw">break</span>;     <span class="co">// 處理POP指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;PUSHB&quot;</span>):R[SP]--; R[ra]=<span class="ot">m</span>.<span class="fu">getb</span>(addr); <span class="ot">m</span>.<span class="fu">setb</span>(R[SP], R[ra]); <span class="kw">break</span>; <span class="co">// 處理PUSH指令</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;POPB&quot;</span>):R[ra] = <span class="ot">m</span>.<span class="fu">getb</span>(R[SP]); R[SP]++; <span class="kw">break</span>;      <span class="co">// 處理POPB指令</span>
+        <span class="kw">default</span>: <span class="ot">c</span>.<span class="fu">error</span>(<span class="st">&quot;OP not found!&quot;</span>, <span class="kw">null</span>);
+      } <span class="co">// switch</span>
+      <span class="kw">if</span> (isDump) 
+        <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;PC=%s IR=%s SW=%s R[%s]=0x%s=%d&quot;</span>, <span class="co">// 印出 PC, IR, R[ra]暫存器的值，以利觀察</span>
+              <span class="ot">c</span>.<span class="fu">hex</span>(tpc,<span class="dv">4</span>), <span class="ot">c</span>.<span class="fu">hex</span>(R[IR],<span class="dv">8</span>), <span class="ot">c</span>.<span class="fu">hex</span>(R[SW],<span class="dv">8</span>), <span class="ot">c</span>.<span class="fu">hex</span>(ra,<span class="dv">2</span>), <span class="ot">c</span>.<span class="fu">hex</span>(R[ra], <span class="dv">8</span>), R[ra]);
+    } <span class="co">// while</span>
+}
+
+<span class="fu">run</span>(<span class="ot">process</span>.<span class="fu">argv</span>[<span class="dv">2</span>]);</code></pre>
+<p>從上面的 VM0 虛擬機當中，您可以看到，假如不考慮執行速度的問題，那麼要撰寫一個虛擬機是非常容易的事情。 我們只要去忠實的模擬每一個指令所應該做的動作，就可以完成虛擬機的設計了。</p>
+<p>讓我們稍微解釋一下上述 VM0 虛擬機的程式原理，請讀者將焦點先放在以下的程式片段中。</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript">    ...
+    <span class="fu">m</span> = <span class="kw">new</span> <span class="fu">Memory</span>(<span class="dv">1</span>);
+    <span class="ot">m</span>.<span class="fu">load</span>(objFile);
+    <span class="kw">var</span> stop = <span class="kw">false</span>;
+    <span class="kw">while</span> (!stop) {                                          <span class="co">// 如果尚未結束</span>
+      ...
+      <span class="fu">R</span>[IR] = <span class="ot">m</span>.<span class="fu">geti</span>(R[PC]);                                 <span class="co">// 指令擷取，IR=[PC..PC+3]</span>
+      R[PC] += <span class="dv">4</span>;                                            <span class="co">// 擷取完將 PC 加 4，指向下一個指令</span>
+      <span class="kw">var</span> op = <span class="ot">c</span>.<span class="fu">bits</span>(R[IR], <span class="dv">24</span>, <span class="dv">31</span>);                        <span class="co">// 取得 op 欄位，IR[24..31]</span>
+      <span class="kw">var</span> ra = <span class="ot">c</span>.<span class="fu">bits</span>(R[IR], <span class="dv">20</span>, <span class="dv">23</span>);                        <span class="co">// 取得 ra 欄位，IR[20..23]</span>
+      <span class="kw">var</span> rb = <span class="ot">c</span>.<span class="fu">bits</span>(R[IR], <span class="dv">16</span>, <span class="dv">19</span>);                        <span class="co">// 取得 rb 欄位，IR[16..19]</span>
+      <span class="kw">var</span> rc = <span class="ot">c</span>.<span class="fu">bits</span>(R[IR], <span class="dv">12</span>, <span class="dv">15</span>);                        <span class="co">// 取得 rc 欄位，IR[12..15]</span>
+      <span class="kw">var</span> c24= <span class="ot">c</span>.<span class="fu">signbits</span>(R[IR], <span class="dv">0</span>,  <span class="dv">23</span>);                    <span class="co">// 取得 24 位元的 cx</span>
+      <span class="kw">var</span> c16= <span class="ot">c</span>.<span class="fu">signbits</span>(R[IR], <span class="dv">0</span>,  <span class="dv">15</span>);                    <span class="co">// 取得 16 位元的 cx</span>
+      <span class="kw">var</span> c5 = <span class="ot">c</span>.<span class="fu">bits</span>(R[IR], <span class="dv">0</span>,   <span class="dv">4</span>);                        <span class="co">// 取得 16 位元的 cx</span>
+      <span class="kw">var</span> addr  = R[rb]+c16;
+      <span class="kw">var</span> raddr = R[rb]+R[rc];                               <span class="co">// 取得位址[Rb+Rc]                          </span>
+      <span class="kw">var</span> N  = <span class="ot">c</span>.<span class="fu">bits</span>(R[SW], <span class="dv">31</span>, <span class="dv">31</span>);
+      <span class="kw">var</span> Z  = <span class="ot">c</span>.<span class="fu">bits</span>(R[SW], <span class="dv">30</span>, <span class="dv">30</span>);
+      <span class="kw">switch</span> (op) {                                          <span class="co">// 根據op執行動作</span>
+        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;LD&quot;</span>) : R[ra] = <span class="ot">m</span>.<span class="fu">geti</span>(addr); <span class="kw">break</span>;         <span class="co">// 處理 LD 指令</span>
+        ...
+        <span class="fu">case</span> <span class="fu">ID</span>(<span class="st">&quot;JMP&quot;</span>): R[PC]+=c24; <span class="kw">break</span>;                   <span class="co">// 處理JMP指令                             </span>
+        ...
+        <span class="fu">case</span> <span class="fu">ID</span>(<span class="st">&quot;JSUB&quot;</span>):R[LR] = R[PC]; R[PC]+=c24; <span class="kw">break</span>;    <span class="co">// 處理JSUB指令</span>
+        ...
+        <span class="fu">case</span> <span class="fu">ID</span>(<span class="st">&quot;RET&quot;</span>): <span class="kw">if</span> (R[LR]&lt;<span class="dv">0</span>) stop=<span class="kw">true</span>; <span class="kw">else</span> R[PC]=LR; <span class="kw">break</span>; <span class="co">// 處理RET指令</span>
+        ...        </code></pre>
+<p>首先我們用 m = new Memory(1) 建立一個空的記憶體，然後再用 m.load(objFile) 載入目的檔到記憶體中， 接著就開始進入 while (!stop) 起頭的指令解譯迴圈了，然後接著用 R[IR] = m.geti(R[PC]) 這個指令取出 程式計數暫存器 PC 所指到的記憶體內容 m[PC]，然後放到指令暫存器 IR 當中，接著就可以取出指令暫存器 IR 當中的欄位，像是指令碼 op、暫存器 ra, rb, rc 與常數部分 c24, c16, c5 等欄位。</p>
+<p>然後就能對每個指令所應做的動作進行模擬，例如 LD 指令的功能是將記憶體位址 addr = R[rb]+c16 的內容 取出，放到編號 ra 的暫存器當中，因此只要用 R[ra] = m.geti(addr) 這樣一個函數呼叫，就可以完成模擬的動作了。</p>
+<p>當然、有些模擬動作很簡單，可以用一兩個指令做完，像是 LD, ST, JMP 等都是如此，但有些動作就比較複雜， 像是 JSUB, RET, PUSH, POP 等就要好幾個指令，最複雜的大概是 CMP 與 SWI 這兩個指令了，CMP 由於牽涉到比較動作 且需要設定 N, Z 等旗標，所以程式碼較長如下：</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript">...
+        <span class="fu">case</span> <span class="fu">ID</span>(<span class="st">&quot;CMP&quot;</span>): {                                    <span class="co">// 處理 CMP指令，根據比較結果，設定 N,Z 旗標 </span>
+          <span class="kw">if</span> (R[ra] &gt; R[rb]) {                               <span class="co">// &gt; : SW(N=0, Z=0)</span>
+            R[SW] &amp;= <span class="bn">0x3FFFFFFF</span>;                             <span class="co">// N=0, Z=0</span>
+          } <span class="kw">else</span> <span class="kw">if</span> (R[ra] &lt; R[rb]) {                        <span class="co">// &lt; : SW(N=1, Z=0, ....)                                                </span>
+            R[SW] |= <span class="bn">0x80000000</span>;                             <span class="co">// N=1;</span>
+            R[SW] &amp;= <span class="bn">0xBFFFFFFF</span>;                             <span class="co">// Z=0;</span>
+          } <span class="kw">else</span> {                                           <span class="co">// = : SW(N=0, Z=1)                      </span>
+            R[SW] &amp;= <span class="bn">0x7FFFFFFF</span>;                             <span class="co">// N=0;</span>
+            R[SW] |= <span class="bn">0x40000000</span>;                             <span class="co">// Z=1;</span>
+          }
+          ra = <span class="dv">12</span>;
+          <span class="kw">break</span>;                                                                                        
+        }
+...</code></pre>
+<p>而 SWI 則是軟體中斷，這個部分也可以不做任何事，不過如果要支援某些中斷函數的話，就可以在這個指令中進行模擬， 目前 SWI 指令處理的原始碼如下：</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript">        <span class="kw">case</span> <span class="fu">ID</span>(<span class="st">&quot;SWI&quot;</span>):                                      <span class="co">// 處理SWI指令</span>
+            <span class="kw">switch</span> (c24) {
+                <span class="kw">case</span> <span class="dv">3</span>: <span class="ot">c</span>.<span class="fu">printf</span>(<span class="st">&quot;%s&quot;</span>, <span class="ot">m</span>.<span class="fu">getstr</span>(R[<span class="dv">9</span>])); <span class="kw">break</span>;
+                <span class="kw">case</span> <span class="dv">4</span>: <span class="ot">c</span>.<span class="fu">printf</span>(<span class="st">&quot;%d&quot;</span>, R[<span class="dv">9</span>]); <span class="kw">break</span>;
+                <span class="kw">default</span>: 
+                    <span class="kw">var</span> emsg = <span class="ot">c</span>.<span class="fu">format</span>(<span class="st">&quot;SWI cx=%d not found!&quot;</span>, c24); 
+                    <span class="ot">c</span>.<span class="fu">error</span>(emsg, <span class="kw">null</span>); 
+                    <span class="kw">break</span>;
+            }
+            <span class="kw">break</span>;</code></pre>
+<p>目前我們支援兩個中斷處理呼叫，也就是 SWI 3 與 SWI 4。</p>
+<p>其中的 SWI 4 會在螢幕上印出一個儲存在暫存器 R[9] 當中的整數，而 SWI 3 會在螢幕上印出一個記憶體當中的字串， 這個字串的起始位址也是儲存在暫存器 R[9] 當中的。</p>
+<h2 id="結語"><a href="#結語">結語</a></h2>
+<p>透過 VM0，筆者希望能夠讓讀者清楚的瞭解虛擬機的設計方式，當然、VM0 是一個「跑得很慢」的虛擬機。</p>
+<p>如果要讓虛擬機跑得很快，通常要搭配「立即編譯技術」(Just in Time Compiler, JIT) ，像是 Java 虛擬機 JVM 就是利用 JIT 才能夠讓 Java 程式跑得夠快。</p>
+<p>另外、像是 VMWare、VirtualBox 等，則是在相同的 x86 架構下去執行的，因此重點變成「如何有效的繞過作業系統 的控管，讓機器碼在 CPU 上執行」的問題了。</p>
+<p>在開放原始碼的領域，QEMU 是一個非常重要的虛擬機，其做法可以參考下列 QEMU 原作者 bellard 的論文：</p>
+<ul>
+<li><a href="https://www.usenix.org/legacy/event/usenix05/tech/freenix/full_papers/bellard/bellard.pdf">https://www.usenix.org/legacy/event/usenix05/tech/freenix/full_papers/bellard/bellard.pdf</a></li>
+</ul>
+<p>摘要如下：</p>
+<blockquote>
+<p>The ﬁrst step is to split each target CPU instruction into fewer simpler instructions called micro operations. Each micro operation is implemented by a small piece of C code. This small C source code is compiled by GCC to an object ﬁle. The micro operations are chosen so that their number is much smaller (typically a few hundreds) than all the combinations of instructions and operands of the target CPU. The translation from target CPU instructions to micro operations is done entirely with hand coded code. The source code is optimized for readability and compactness because the speed of this stage is less critical than in an interpreter.</p>
+<p>A compile time tool called dyngen uses the object ﬁle containing the micro operations as input to generate a dynamic code generator. This dynamic code generator is invoked at runtime to generate a complete host function which concatenates several micro operations.</p>
+</blockquote>
+<p>筆者先前粗略的看了一下，原本以為「QEMU 則是機器法反編譯為 C 語言基本運算後，再度用 gcc 編譯 為機器碼，才能達到高速執行的目的」，但是仔細看又不是這樣，想想還是不要自己亂解釋好了，不過有高手 J 兄來信說明如下，原文附上：</p>
+<blockquote>
+<p>QEMU 採取的技術為 portable JIT，本質上是一種 template-based compilation，事先透過 TCG 做 code generation，使得 C-like template 得以在執行時期可對應到不同平台的 machine code，而執行時期沒有 gcc 的介入，我想這點該澄清。</p>
+</blockquote>
+<p>像 bellard 這種高手寫的虛擬機，果然是又快又好啊！</p>
+<p>VM0 與 QEMU 相比，速度上致少慢了幾十倍，不過程式碼絕對是簡單很多就是了。</p>
+<h1 id="組譯器---as0"><a href="#組譯器---as0">組譯器 - as0</a></h1>
+<p>在前面幾章，我們介紹了開放電腦計畫中的「處理器」 -- 包含 CPU0 的結構、指令集與編碼方式。 在本章中，我們將為 CPU0 設計一個組譯器 AS0，以便能更深入理解 CPU0 的結構，並瞭解 組譯器的設計原理。</p>
+<h2 id="組譯範例-1"><a href="#組譯範例-1">組譯範例</a></h2>
+<p>讓我們先用範例導向的方式，先看看一個 CPU0 的組合語言程式，如下所示：</p>
+<p>組合語言：sum.as0</p>
+<pre><code>        LD     R1, sum      ; R1 = sum = 0
+        LD     R2, i        ; R2 = i = 1
+        LDI    R3, 10       ; R3 = 10
+FOR:    CMP    R2, R3       ; if (R2 &gt; R3)
+        JGT    EXIT         ;   goto EXIT
+        ADD    R1, R1, R2   ; R1 = R1 + R2 (sum = sum + i)
+        ADDI   R2, R2, 1    ; R2 = R2 + 1  ( i  = i + 1)
+        JMP    FOR          ; goto FOR
+EXIT:   ST     R1, sum      ; sum = R1
+        ST     R2, i        ; i = R2
+        LD     R9, msgptr   ; R9= pointer(msg) = &amp;msg
+        SWI    3            ; SWI 3 : print string &amp;msg
+        MOV    R9, R1       ; R9 = R1 = sum
+        SWI    2            ; SWI 2 : print number sum
+        RET                 ; return to CALLER
+i:      RESW    1           ; int i
+sum:    WORD    0           ; int sum=0
+msg:    BYTE    &quot;sum=&quot;, 0   ; char *msg = &quot;sum=&quot;
+msgptr: WORD    msg         ; char &amp;msgptr = &amp;msg</code></pre>
+<p>上述程式是一個可以計算 1+2+....+10 之結果的程式，最後會透過軟體中斷 (SWI, Software Interrupt) 的方式， 印出訊息到螢幕畫面上，以下是利用我們寫的組譯器 AS0 對上述程式進行組譯的過程：</p>
+<pre><code>D:\oc\code&gt;node as0 sum.as0 sum.ob0
+Assembler:asmFile=sum.as0 objFile=sum.ob0
+===============Assemble=============
+[ &#39;        LD     R1, sum      ; R1 = sum = 0&#39;,
+  &#39;        LD     R2, i        ; R2 = i = 1&#39;,
+  &#39;        LDI    R3, 10       ; R3 = 10&#39;,
+  &#39;FOR:    CMP    R2, R3       ; if (R2 &gt; R3)&#39;,
+  &#39;        JGT    EXIT         ;   goto EXIT&#39;,
+  &#39;        ADD    R1, R1, R2   ; R1 = R1 + R2 (sum = sum + i)&#39;,
+  &#39;        ADDI   R2, R2, 1    ; R2 = R2 + 1  ( i  = i + 1)&#39;,
+  &#39;        JMP    FOR          ; goto FOR&#39;,
+  &#39;EXIT:   ST     R1, sum      ; sum = R1&#39;,
+  &#39;        ST     R2, i        ; i = R2&#39;,
+  &#39;        LD     R9, msgptr   ; R9= pointer(msg) = &amp;msg&#39;,
+  &#39;        SWI    3            ; SWI 3 : 印出 R9 (=&amp;msg) 中的字串&#39;,
+  &#39;        MOV    R9, R1       ; R9 = R1 = sum&#39;,
+  &#39;        SWI    4            ; SWI 2 : 印出 R9 (=R1=sum) 中的整數&#39;,
+  &#39;        RET                 ; return 返回上一層呼叫函數&#39;,
+  &#39;i:      RESW   1            ; int i&#39;,
+  &#39;sum:    WORD   0            ; int sum=0&#39;,
+  &#39;msg:    BYTE   &quot;1+...+10=&quot;, 0   ; char *msg = &quot;sum=&quot;&#39;,
+  &#39;msgptr: WORD   msg          ; char &amp;msgptr = &amp;msg&#39; ]
+=================PASS1================
+0000          LD       R1,sum           L 00
+0004          LD       R2,i             L 00
+0008          LDI      R3,10            L 08
+000C FOR      CMP      R2,R3            A 10
+0010          JGT      EXIT             J 23
+0014          ADD      R1,R1,R2         A 13
+0018          ADDI     R2,R2,1          A 1B
+001C          JMP      FOR              J 26
+0020 EXIT     ST       R1,sum           L 01
+0024          ST       R2,i             L 01
+0028          LD       R9,msgptr        L 00
+002C          SWI      3                J 2A
+0030          MOV      R9,R1            A 12
+0034          SWI      4                J 2A
+0038          RET                       J 2C
+003C i        RESW     1                D F0
+0040 sum      WORD     0                D F2
+0044 msg      BYTE     &quot;1+...+10=&quot;,0    D F3
+004E msgptr   WORD     msg              D F2
+===============SYMBOL TABLE=========
+FOR      000C
+EXIT     0020
+i        003C
+sum      0040
+msg      0044
+msgptr   004E
+=============PASS2==============
+0000          LD       R1,sum           L 00 001F003C
+0004          LD       R2,i             L 00 002F0034
+0008          LDI      R3,10            L 08 0830000A
+000C FOR      CMP      R2,R3            A 10 10230000
+0010          JGT      EXIT             J 23 2300000C
+0014          ADD      R1,R1,R2         A 13 13112000
+0018          ADDI     R2,R2,1          A 1B 1B220001
+001C          JMP      FOR              J 26 26FFFFEC
+0020 EXIT     ST       R1,sum           L 01 011F001C
+0024          ST       R2,i             L 01 012F0014
+0028          LD       R9,msgptr        L 00 009F0022
+002C          SWI      3                J 2A 2A000003
+0030          MOV      R9,R1            A 12 12910000
+0034          SWI      4                J 2A 2A000004
+0038          RET                       J 2C 2C000000
+003C i        RESW     1                D F0 00000000
+0040 sum      WORD     0                D F2 00000000
+0044 msg      BYTE     &quot;1+...+10=&quot;,0    D F3 312B2E2E2E2B31303D00
+004E msgptr   WORD     msg              D F2 00000044
+=================SAVE OBJ FILE================
+
+00 :  001F003C 002F0034 0830000A 10230000
+10 :  2300000C 13112000 1B220001 26FFFFEC
+20 :  011F001C 012F0014 009F0022 2A000003
+30 :  12910000 2A000004 2C000000 00000000
+40 :  00000000 312B2E2E 2E2B3130 3D000000
+50 :  0044</code></pre>
+<p>當您組譯完成之後，就可以利用開放電腦計畫中的虛擬機 VM0 執行 AS0 所輸出的目的檔 sum.ob0， 其執行過程如下：</p>
+<pre><code>D:\oc\code&gt;node vm0 sum.ob0
+1+...+10=55</code></pre>
+<h2 id="as0-組譯器設計"><a href="#as0-組譯器設計">AS0 組譯器設計</a></h2>
+<p>組譯器的設計，通常採用兩階段的編碼方式，第一階段 (PASS1) 先計算出每個指令的位址，並記住所有標記符號的位址。 然後在第二階段 (PASS2) 才真正將指令轉換為機器碼輸出，在以下 AS0 組譯器的設計當中，我們就採用了這種兩階段的 處理方式。</p>
+<p>為了讓組譯器能夠容易修改與移植，我們將一般組譯器都會有的基礎結構 (抽象的組譯器物件) 放在 as.js 這個程式模組當中， 然後將與 CPU0 有關的部分放在 as0.js 這個實作模組當中，以下先列出 as.js 這個抽象物件模組。</p>
+<p>檔案：as.js (抽象組譯器物件)</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> fs = <span class="fu">require</span>(<span class="st">&quot;fs&quot;</span>); <span class="co">// 引用檔案函式庫</span>
+<span class="kw">var</span> c = <span class="fu">require</span>(<span class="st">&quot;./ccc&quot;</span>); <span class="co">// 引用基本函式庫 ccc.js</span>
+<span class="kw">var</span> Memory = <span class="fu">require</span>(<span class="st">&quot;./memory&quot;</span>); <span class="co">// 引用記憶體物件 memory.js</span>
+
+<span class="kw">var</span> as = <span class="kw">function</span>(opTable) { <span class="co">// 抽象組譯器物件</span>
+ <span class="kw">this</span>.<span class="fu">opTable</span> = opTable; <span class="co">// 取得指令表 opTable</span>
+
+ <span class="kw">this</span>.<span class="fu">assemble</span> = <span class="kw">function</span>(asmFile, objFile) { <span class="co">// 組譯器的主要函數</span>
+  <span class="kw">this</span>.<span class="fu">lines</span> = []; <span class="kw">this</span>.<span class="fu">codes</span> = []; <span class="co">// 設定程式碼行 (lines)，指令陣列 (codes)</span>
+  <span class="kw">this</span>.<span class="fu">symTable</span> = {}; <span class="co">// 建立空的符號表 (symTable)</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;Assembler:asmFile=%s objFile=%s&quot;</span>, asmFile, objFile); <span class="co">// 輸入組合語言、輸出目的檔</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;===============Assemble=============&quot;</span>);
+  <span class="kw">var</span> text = <span class="ot">fs</span>.<span class="fu">readFileSync</span>(asmFile, <span class="st">&quot;utf8&quot;</span>); <span class="co">// 讀取檔案到 text 字串中</span>
+  <span class="kw">this</span>.<span class="fu">lines</span> = <span class="ot">text</span>.<span class="fu">split</span>(<span class="ot">/</span><span class="bn">[</span><span class="fl">\r\n</span><span class="bn">]</span><span class="fl">+</span><span class="ot">/</span>); <span class="co">// 將組合語言分割成一行一行</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="kw">this</span>.<span class="fu">lines</span>); <span class="co">// 印出組合語言以便觀察</span>
+  <span class="kw">this</span>.<span class="fu">pass1</span>(); <span class="co">// 第一階段：計算位址</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;===============SYMBOL TABLE=========&quot;</span>);
+  <span class="kw">for</span> (s <span class="kw">in</span> <span class="kw">this</span>.<span class="fu">symTable</span>) { <span class="co">// 印出符號表以便觀察</span>
+    <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;%s %s&quot;</span>, <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39; &#39;</span>,s,<span class="dv">8</span>), <span class="ot">c</span>.<span class="fu">hex</span>(<span class="kw">this</span>.<span class="fu">symTable</span>[s].<span class="fu">address</span>, <span class="dv">4</span>));
+  }
+  <span class="kw">this</span>.<span class="fu">pass2</span>(); <span class="co">// 第二階段：建構目的碼</span>
+  <span class="kw">this</span>.<span class="fu">saveObjFile</span>(objFile); <span class="co">// 輸出目的檔</span>
+ }
+
+ <span class="kw">this</span>.<span class="fu">pass1</span> = <span class="kw">function</span>() { <span class="co">// 第一階段的組譯</span>
+  <span class="kw">var</span> address = <span class="dv">0</span>;  <span class="co">// 程式計數器 PC 的起始位址為 0</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;=================PASS1================&quot;</span>);
+  <span class="kw">for</span> (<span class="kw">var</span> i <span class="kw">in</span> <span class="kw">this</span>.<span class="fu">lines</span>) { <span class="co">// 對於每一行</span>
+    <span class="kw">try</span> {
+      <span class="kw">var</span> code = <span class="kw">this</span>.<span class="fu">parse</span>(<span class="kw">this</span>.<span class="fu">lines</span>[i]); <span class="co">// 剖析並建立 code 物件</span>
+      <span class="ot">code</span>.<span class="fu">address</span> = address; <span class="co">// 設定該行的位址</span>
+      <span class="kw">if</span> (<span class="ot">code</span>.<span class="ot">label</span>.<span class="fu">length</span> != <span class="dv">0</span>) { <span class="co">// 如果有標記符號</span>
+        <span class="kw">this</span>.<span class="fu">symTable</span>[<span class="ot">code</span>.<span class="fu">label</span>] = code; <span class="co">// 加入符號表中</span>
+      }
+      <span class="kw">this</span>.<span class="ot">codes</span>.<span class="fu">push</span>(code); <span class="co">// 將剖析完成的指令放入陣列中</span>
+      <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;%s&quot;</span>, code); <span class="co">// 印出指令物件</span>
+      address += <span class="kw">this</span>.<span class="fu">size</span>(code); <span class="co">//  計算下一個指令位址</span>
+    } <span class="kw">catch</span> (err) { <span class="co">// 語法有錯，印出錯誤的行號與內容</span>
+      <span class="ot">c</span>.<span class="fu">error</span>(<span class="ot">c</span>.<span class="fu">format</span>(<span class="st">&quot;line %d : %s&quot;</span>, i, <span class="kw">this</span>.<span class="fu">lines</span>[i]), err);
+    }
+  }
+ }
+
+ <span class="kw">this</span>.<span class="fu">pass2</span> = <span class="kw">function</span>(codes) { <span class="co">// 組譯器的第二階段</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;=============PASS2==============&quot;</span>);
+  <span class="kw">for</span> (<span class="kw">var</span> i <span class="kw">in</span> <span class="kw">this</span>.<span class="fu">codes</span>) { <span class="co">// 對每一個指令</span>
+    <span class="kw">try</span> {
+      <span class="kw">this</span>.<span class="fu">translate</span>(<span class="kw">this</span>.<span class="fu">codes</span>[i]); <span class="co">// 將組合語言指令翻譯成機器碼</span>
+      <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;%s&quot;</span>, <span class="kw">this</span>.<span class="fu">codes</span>[i]); <span class="co">// 印出指令物件 (含組合語言與機器碼)</span>
+    } <span class="kw">catch</span> (err) { <span class="co">// 語法有錯，印出錯誤的行號與內容</span>
+      <span class="ot">c</span>.<span class="fu">error</span>(<span class="ot">c</span>.<span class="fu">format</span>(<span class="st">&quot;line %d : %s&quot;</span>, i, <span class="kw">this</span>.<span class="fu">lines</span>[i]), err);
+    }
+  }
+ }
+ 
+ <span class="kw">this</span>.<span class="fu">saveObjFile</span> = <span class="kw">function</span>(objFile) { <span class="co">// 儲存目的檔</span>
+  <span class="ot">c</span>.<span class="fu">log</span>(<span class="st">&quot;=================SAVE OBJ FILE================&quot;</span>);
+  <span class="kw">var</span> obj = <span class="st">&quot;&quot;</span>; <span class="co">// obj 為目的檔的 16 進位字串，初始化為空字串</span>
+  <span class="kw">for</span> (<span class="kw">var</span> i <span class="kw">in</span> <span class="kw">this</span>.<span class="fu">codes</span>) <span class="co">// 對於每個指令</span>
+    obj += <span class="kw">this</span>.<span class="fu">codes</span>[i].<span class="fu">obj</span>; <span class="co">// 都將目的碼加入 obj 字串中。</span>
+  <span class="kw">var</span> m = <span class="kw">new</span> <span class="fu">Memory</span>(<span class="dv">1</span>); <span class="co">// Memory 物件，用來將 16 進位目的碼轉為 2 進位儲存。</span>
+  <span class="ot">m</span>.<span class="fu">loadhex</span>(obj); <span class="co">// 將 16 進位目的碼載入記憶體</span>
+  <span class="ot">m</span>.<span class="fu">dump</span>(); <span class="co">// 輸出記憶體內容</span>
+  <span class="ot">m</span>.<span class="fu">save</span>(objFile); <span class="co">// 將記憶體內容除存到目的檔 objFile 中。</span>
+ }
+
+ <span class="kw">this</span>.<span class="fu">size</span> = <span class="kw">function</span>(code) { <span class="co">// 計算指令所佔空間大小，在 pass1() 當中會呼叫此函數</span>
+    <span class="kw">var</span> len = <span class="dv">0</span>, unitSize = <span class="dv">1</span>; <span class="co">// len: 指令大小 , unitSize:每單位大小 (BYTE=1, WORD=4)</span>
+    <span class="kw">switch</span> (<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">name</span>) { <span class="co">// 根據運算碼 op</span>
+      <span class="kw">case</span> <span class="st">&quot;RESW&quot;</span> : <span class="kw">return</span> <span class="dv">4</span> * <span class="fu">parseInt</span>(<span class="ot">code</span>.<span class="fu">args</span>[<span class="dv">0</span>]);  <span class="co">// 如果是 RESW, 大小為 4*保留量(參數 0)</span>
+      <span class="kw">case</span> <span class="st">&quot;RESB&quot;</span> : <span class="kw">return</span> <span class="dv">1</span> * <span class="fu">parseInt</span>(<span class="ot">code</span>.<span class="fu">args</span>[<span class="dv">0</span>]);  <span class="co">// 如果是 RESB, 大小為 1*保留量(參數 0)</span>
+      <span class="kw">case</span> <span class="st">&quot;WORD&quot;</span> : unitSize = <span class="dv">4</span>; <span class="co">// 沒有 break，繼續執行到 BYTE 部分的程式 (共用)</span>
+      <span class="kw">case</span> <span class="st">&quot;BYTE&quot;</span> : <span class="co">// 如果是BYTE, 大小是 1*參數個數 </span>
+        <span class="kw">for</span> (i <span class="kw">in</span> <span class="ot">code</span>.<span class="fu">args</span>) { <span class="co">// 對於 BYTE 或 WORD 中的每個元素</span>
+          <span class="kw">if</span> (<span class="ot">code</span>.<span class="fu">args</span>[i].<span class="fu">match</span>(<span class="ot">/</span><span class="fl">^\&quot;</span><span class="ot">.</span><span class="fl">*?\&quot;$</span><span class="ot">/</span>)) <span class="co">// 如果是字串，像 &quot;Hello!&quot;</span>
+            len += (<span class="ot">code</span>.<span class="fu">args</span>[i].<span class="fu">length</span> - <span class="dv">2</span>) * unitSize; <span class="co">// 則大小為 unitSize*字串長度</span>
+          <span class="kw">else</span> <span class="co">// 否則 大小就是 unitSize (BYTE=1, WORD=4)</span>
+            len += unitSize;
+        }
+        <span class="kw">return</span> len;
+      <span class="kw">case</span> <span class="st">&quot;&quot;</span> : <span class="kw">return</span> <span class="dv">0</span>; <span class="co">// 如果只是標記, 大小為 0</span>
+      <span class="kw">default</span> : <span class="kw">return</span> <span class="dv">4</span>; <span class="co">// 其他情形 (指令), 大小為 4</span>
+    }
+ }  
+}
+
+<span class="ot">module</span>.<span class="fu">exports</span> = as; <span class="co">// 匯出「抽象組譯器物件 as 」</span></code></pre>
+<p>請注意，as.js 模組缺少 parse(), translate() 等函數，由於這兩個函數是與 CPU0 設計有關的部分，因此定義在後續的 as0.js 當中</p>
+<p>註：雖然上述程式中的 size() 函數也可能會與 CPU 的設計有關，但是對於 32 bit 的 CPU 而言，可以通用，因此我們 將此函數放在上層的 as.js 當中，如果要定義非 32 位元 CPU、或者重新定義組合語言的語法時，可以覆寫掉這個 size() 函數。</p>
+<p>在上述程式中，我們用到了一個 code 物件，以下是該物件之定義模組 code.js 的原始碼：</p>
+<p>檔案：code.js (指令物件)</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> c = <span class="fu">require</span>(<span class="st">&quot;./ccc&quot;</span>); <span class="co">// 引用基本函式庫 ccc.js</span>
+
+<span class="kw">var</span> code = <span class="kw">function</span>(line, opTable) { <span class="co">// 指令物件 code</span>
+  <span class="kw">this</span>.<span class="fu">parseR</span> = <span class="kw">function</span>(str) { <span class="co">// 剖析暫存器參數 Ra，例如 parse(&#39;R3&#39;) = 3</span>
+    <span class="kw">var</span> rmatch = <span class="ot">/R</span><span class="fl">(</span><span class="bn">\d</span><span class="fl">+)</span><span class="ot">/</span>.<span class="fu">exec</span>(str); <span class="co">// 比對取出 Ra 中的數字</span>
+    <span class="kw">if</span> (rmatch == <span class="kw">null</span>) <span class="co">// 如果比對失敗，則傳回 NaN</span>
+      <span class="kw">return</span> <span class="kw">NaN</span>;
+    <span class="kw">return</span> <span class="fu">parseInt</span>(rmatch[<span class="dv">1</span>]); <span class="co">// 否則傳回暫存器代號 (數字)</span>
+  }
+
+  <span class="kw">this</span>.<span class="fu">toString</span> = <span class="kw">function</span>() { <span class="co">// 輸出格式化後的指令</span>
+    <span class="kw">return</span> <span class="ot">c</span>.<span class="fu">format</span>(<span class="st">&quot;%s %s %s %s %s %s %s&quot;</span>, <span class="ot">c</span>.<span class="fu">hex</span>(<span class="kw">this</span>.<span class="fu">address</span>, <span class="dv">4</span>), 
+      <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39; &#39;</span>,<span class="kw">this</span>.<span class="fu">label</span>,<span class="dv">8</span>), <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39; &#39;</span>,<span class="kw">this</span>.<span class="ot">op</span>.<span class="fu">name</span>, <span class="dv">8</span>), 
+      <span class="ot">c</span>.<span class="fu">fill</span>(<span class="st">&#39; &#39;</span>,<span class="kw">this</span>.<span class="fu">args</span>, <span class="dv">16</span>), <span class="kw">this</span>.<span class="ot">op</span>.<span class="fu">type</span>, <span class="ot">c</span>.<span class="fu">hex</span>(<span class="kw">this</span>.<span class="ot">op</span>.<span class="fu">id</span>,<span class="dv">2</span>), <span class="kw">this</span>.<span class="fu">obj</span>);
+  }
+  
+  <span class="kw">var</span> labCmd = <span class="ot">/</span><span class="fl">^((</span><span class="bn">\w</span><span class="fl">+)</span><span class="ot">:</span><span class="fl">)?</span><span class="bn">\s</span><span class="fl">*(</span><span class="bn">[</span><span class="fl">^</span><span class="bn">;]</span><span class="fl">*)</span><span class="ot">/</span>; <span class="co">// 指令的語法</span>
+  <span class="kw">var</span> parts  = <span class="ot">labCmd</span>.<span class="fu">exec</span>(line); <span class="co">// 分割出標記與命令</span>
+  <span class="kw">var</span> tokens = parts[<span class="dv">3</span>].<span class="fu">trim</span>().<span class="fu">split</span>(<span class="ot">/</span><span class="bn">[ ,</span><span class="fl">\t\r</span><span class="bn">]</span><span class="fl">+</span><span class="ot">/</span>); <span class="co">// 將命令分割成基本單元</span>
+  <span class="kw">var</span> opName = tokens[<span class="dv">0</span>]; <span class="co">// 取出指令名稱</span>
+  
+  <span class="kw">this</span>.<span class="fu">label</span> = <span class="ot">c</span>.<span class="fu">nonull</span>(parts[<span class="dv">2</span>]); <span class="co">// 取出標記 (\w+)</span>
+  <span class="kw">this</span>.<span class="fu">args</span>  = <span class="ot">tokens</span>.<span class="fu">slice</span>(<span class="dv">1</span>); <span class="co">// 取出參數部份</span>
+  <span class="kw">this</span>.<span class="fu">op</span>    = opTable[opName]; <span class="co">// 取得指令表中的 OP 物件</span>
+  <span class="kw">this</span>.<span class="fu">obj</span>   = <span class="st">&quot;&quot;</span>; <span class="co">// 清空目的碼 16 進位字串 obj </span>
+}
+
+<span class="ot">module</span>.<span class="fu">exports</span> = code; <span class="co">// 匯出指令物件 code</span></code></pre>
+<p>現在、我們以經完成組譯器抽象架構的設計了，可以開始進入與 CPU0 有關的實作部分，也就是 as0.js 的組譯器實作， 補完 as.js 當中所沒有的 parse(), translate() 等函數了，以下是其原始程式碼。</p>
+<p>檔案：as0.js (具體的 CPU0 組譯器 AS0)</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> c = <span class="fu">require</span>(<span class="st">&quot;./ccc&quot;</span>); <span class="co">// 引用基本函式庫 ccc.js</span>
+<span class="kw">var</span> as = <span class="fu">require</span>(<span class="st">&quot;./as&quot;</span>); <span class="co">// 引用抽象組譯器物件 as.js</span>
+<span class="kw">var</span> code = <span class="fu">require</span>(<span class="st">&quot;./code&quot;</span>); <span class="co">// 引用指令物件 code.js</span>
+<span class="kw">var</span> cpu0 = <span class="fu">require</span>(<span class="st">&quot;./cpu0&quot;</span>); <span class="co">// 引用處理器物件 cpu0.js</span>
+
+<span class="kw">var</span> as0 = <span class="kw">new</span> <span class="fu">as</span>(<span class="ot">cpu0</span>.<span class="fu">opTable</span>); <span class="co">// 建立 as0 組譯器物件</span>
+
+<span class="ot">as0</span>.<span class="fu">parse</span> = <span class="kw">function</span>(line) { <span class="co">// 剖析組合語言指令，建立 code 物件</span>
+    <span class="kw">return</span> <span class="kw">new</span> <span class="fu">code</span>(line, <span class="kw">this</span>.<span class="fu">opTable</span>);
+}
+
+<span class="ot">as0</span>.<span class="fu">translate</span> = <span class="kw">function</span>(code) { <span class="co">// 指令的編碼函數</span>
+  <span class="kw">var</span> ra=<span class="dv">0</span>, rb=<span class="dv">0</span>, rc=<span class="dv">0</span>, cx=<span class="dv">0</span>;
+  <span class="kw">var</span> pc = <span class="ot">code</span>.<span class="fu">address</span> + <span class="dv">4</span>; <span class="co">// 提取後PC為位址+4</span>
+  <span class="kw">var</span> args = <span class="ot">code</span>.<span class="fu">args</span>, parseR = <span class="ot">code</span>.<span class="fu">parseR</span>; <span class="co">// 取得 code 物件的函數</span>
+  <span class="kw">var</span> labelCode = <span class="kw">null</span>; <span class="co">// JMP label 中 label 所對應行的物件，稱為 labelCode</span>
+  <span class="kw">if</span> (<span class="ot">code</span>.<span class="fu">op</span> == <span class="kw">undefined</span>) { <span class="co">// 如果沒有指令碼 (只有標記)，則清空目的碼</span>
+    <span class="ot">code</span>.<span class="fu">obj</span> = <span class="st">&quot;&quot;</span>; 
+    <span class="kw">return</span>;
+  }
+  <span class="kw">switch</span> (<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">type</span>) { <span class="co">// 根據指令型態</span>
+    <span class="kw">case</span> <span class="st">&#39;J&#39;</span> : <span class="co">// 處理 J 型指令，編出目的碼 OP Ra+cx</span>
+      <span class="kw">switch</span> (<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">name</span>) {
+        <span class="kw">case</span> <span class="st">&quot;RET&quot;</span>: <span class="kw">case</span> <span class="st">&quot;IRET&quot;</span> : <span class="co">// 如果式返回或中斷返回，則只要輸出 op 碼</span>
+            <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="st">&quot;SWI&quot;</span> : <span class="co">// 如果是軟體中斷指令，則只有 cx 參數有常數值</span>
+            cx = <span class="fu">parseInt</span>(args[<span class="dv">0</span>]);
+            <span class="kw">break</span>;
+        <span class="kw">default</span> : <span class="co">// 其他跳躍指令，例如 JMP label, JLE label 等</span>
+            labelCode = <span class="kw">this</span>.<span class="fu">symTable</span>[args[<span class="dv">0</span>]]; <span class="co">// 取得 label 符號位址</span>
+            cx = <span class="ot">labelCode</span>.<span class="fu">address</span> - pc; <span class="co">// 計算 cx 欄位</span>
+            <span class="kw">break</span>;
+      }
+      <span class="ot">code</span>.<span class="fu">obj</span> = <span class="ot">c</span>.<span class="fu">hex</span>(<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">id</span>,<span class="dv">2</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(cx, <span class="dv">6</span>); <span class="co">// 編出目的碼 OP Ra+cx</span>
+      <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&#39;L&#39;</span> : <span class="co">// 處理 L 型指令，編出目的碼 OP Ra, Rb, cx</span>
+      ra = <span class="fu">parseR</span>(args[<span class="dv">0</span>]); <span class="co">// 取得 Ra 欄位</span>
+      <span class="kw">switch</span> (<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">name</span>) {
+        <span class="kw">case</span> <span class="st">&quot;LDI&quot;</span> :  <span class="co">// 處理  LDI 指令</span>
+            cx = <span class="fu">parseInt</span>(args[<span class="dv">1</span>]); <span class="co">// 取得 cx 欄位</span>
+            <span class="kw">break</span>;
+        <span class="kw">default</span> : <span class="co">// 處理 LD, ST, LDB, STB 指令</span>
+            <span class="kw">if</span> (args[<span class="dv">1</span>].<span class="fu">match</span>(<span class="ot">/</span><span class="fl">^</span><span class="bn">[a-zA-Z]</span><span class="ot">/</span>)){ <span class="co">// 如果是 LD LABEL 這類情況</span>
+              labelCode = <span class="kw">this</span>.<span class="fu">symTable</span>[args[<span class="dv">1</span>]]; <span class="co">// 取得標記的 code 物件</span>
+              rb = <span class="dv">15</span>; <span class="co">// R[15] is PC</span>
+              cx = <span class="ot">labelCode</span>.<span class="fu">address</span> - pc; <span class="co">// 計算標記與 PC 之間的差值</span>
+            } <span class="kw">else</span> { <span class="co">// 否則，若是像 LD Ra, Rb+100 這樣的指令</span>
+              rb = <span class="fu">parseR</span>(args[<span class="dv">2</span>]); <span class="co">// 取得 rb 欄位</span>
+              cx = <span class="fu">parseInt</span>(args[<span class="dv">3</span>]); <span class="co">// 取得 cx 欄位 (例如 100)</span>
+            }
+            <span class="kw">break</span>;
+      }
+      <span class="ot">code</span>.<span class="fu">obj</span> = <span class="ot">c</span>.<span class="fu">hex</span>(<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">id</span>, <span class="dv">2</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(ra, <span class="dv">1</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(rb, <span class="dv">1</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(cx, <span class="dv">4</span>); <span class="co">// 編出目的碼 OP Ra, Rb, cx</span>
+      <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&#39;A&#39;</span> : <span class="co">// 處理 A 型指令，編出目的碼 OP Ra, Rb, Rc, cx</span>
+      ra = <span class="fu">parseR</span>(args[<span class="dv">0</span>]); <span class="co">// 取得 Ra 欄位</span>
+      <span class="kw">switch</span> (<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">name</span>) {
+        <span class="kw">case</span> <span class="st">&quot;LDR&quot;</span>: <span class="kw">case</span> <span class="st">&quot;LBR&quot;</span>: <span class="kw">case</span> <span class="st">&quot;STR&quot;</span>: <span class="kw">case</span> <span class="st">&quot;SBR&quot;</span>:  <span class="co">// 處理  LDR, LBR, STR, SBR 指令，例如 LDR Ra, Rb+Rc</span>
+            rb = <span class="fu">parseR</span>(args[<span class="dv">1</span>]); <span class="co">// 取得 Rb 欄位</span>
+            rc = <span class="fu">parseR</span>(args[<span class="dv">2</span>]); <span class="co">// 取得 Rc 欄位</span>
+            <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="st">&quot;CMP&quot;</span>: <span class="kw">case</span> <span class="st">&quot;MOV&quot;</span> : <span class="co">// 處理 CMP 與 MOV 指令，CMP Ra, Rb; MOV Ra, Rb</span>
+            rb = <span class="fu">parseR</span>(args[<span class="dv">1</span>]); <span class="co">// 取得 Rb</span>
+            <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="st">&quot;SHL&quot;</span>: <span class="kw">case</span> <span class="st">&quot;SHR&quot;</span>: <span class="kw">case</span> <span class="st">&quot;ADDI&quot;</span>: <span class="co">// 處理 SHL, SHR, ADDI 指令，例如 SHL Ra, Rb, Cx</span>
+            rb = <span class="fu">parseR</span>(args[<span class="dv">1</span>]); <span class="co">// 取得 Rb 欄位</span>
+            cx = <span class="fu">parseInt</span>(args[<span class="dv">2</span>]); <span class="co">// 取得 cx 欄位 (例如 3)</span>
+            <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="st">&quot;PUSH&quot;</span>: <span class="kw">case</span> <span class="st">&quot;POP&quot;</span>: <span class="kw">case</span> <span class="st">&quot;PUSHB&quot;</span>: <span class="kw">case</span> <span class="st">&quot;POPB&quot;</span> :  <span class="co">// 處理 PUSH, POP, PUSHB, POPB</span>
+            <span class="kw">break</span>; <span class="co">// 例如 PUSH Ra, 只要處理 Ra 就好，A 型一進入就已經處理 Ra 了。</span>
+        <span class="kw">default</span> :  <span class="co">// 其他情況，像是 ADD, SUB, MUL, DIV, AND, OR, XOR 等，例如 ADD Ra, Rb, Rc</span>
+            rb = <span class="fu">parseR</span>(args[<span class="dv">1</span>]);  <span class="co">// 取得 Rb 欄位</span>
+            rc = <span class="fu">parseR</span>(args[<span class="dv">2</span>]);  <span class="co">// 取得 Rc 欄位</span>
+            <span class="kw">break</span>;
+      }
+      <span class="ot">code</span>.<span class="fu">obj</span> = <span class="ot">c</span>.<span class="fu">hex</span>(<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">id</span>, <span class="dv">2</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(ra, <span class="dv">1</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(rb, <span class="dv">1</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(rc,<span class="dv">1</span>)+<span class="ot">c</span>.<span class="fu">hex</span>(cx, <span class="dv">3</span>); <span class="co">// 編出目的碼 OP Ra, Rb, Rc, cx</span>
+      <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&#39;D&#39;</span> : { <span class="co">// 我們將資料宣告  RESW, RESB, WORD, BYTE 也視為一種指令，其形態為 D</span>
+      <span class="kw">var</span> unitSize = <span class="dv">1</span>; <span class="co">// 預設的型態為 BYTE，資料大小 = 1</span>
+      <span class="kw">switch</span> (<span class="ot">code</span>.<span class="ot">op</span>.<span class="fu">name</span>) {                    
+        <span class="kw">case</span> <span class="st">&quot;RESW&quot;</span>:  <span class="kw">case</span> <span class="st">&quot;RESB&quot;</span>: <span class="co">// 如果是 RESW 或 RESB，例如 a:RESB 2</span>
+          <span class="ot">code</span>.<span class="fu">obj</span> = <span class="ot">c</span>.<span class="fu">dup</span>(<span class="st">&#39;0&#39;</span>, <span class="kw">this</span>.<span class="fu">size</span>(code)*<span class="dv">2</span>); <span class="co">// 1 個 byte 的空間要用兩個16進位的 00 去填充</span>
+          <span class="kw">break</span>;                                    <span class="co">// 例如：a RESB 2 會編為 &#39;0000&#39;</span>
+        <span class="kw">case</span> <span class="st">&quot;WORD&quot;</span>: <span class="co">// 如果是 WORD ，佔 4 個 byte</span>
+          unitSize = <span class="dv">4</span>;
+        <span class="kw">case</span> <span class="st">&quot;BYTE&quot;</span>: { <span class="co">// 如果是 BYTE ，佔 1 個 byte</span>
+          <span class="ot">code</span>.<span class="fu">obj</span> = <span class="st">&quot;&quot;</span>; <span class="co">// 一開始目的碼為空的</span>
+          <span class="kw">for</span> (<span class="kw">var</span> i <span class="kw">in</span> args) { <span class="co">// 對於每個參數，都要編為目的碼</span>
+            <span class="kw">if</span> (args[i].<span class="fu">match</span>(<span class="ot">/</span><span class="fl">^\&quot;</span><span class="ot">.</span><span class="fl">*?\&quot;$</span><span class="ot">/</span>)) {  <span class="co">// 該參數為字串，例如： &quot;Hello!&quot; 轉為 68656C6C6F21</span>
+              <span class="kw">var</span> str = args[i].<span class="fu">substring</span>(<span class="dv">1</span>, args[i].<span class="fu">length</span><span class="dv">-1</span>); <span class="co">// 取得 &quot;...&quot; 中間的字串內容</span>
+              <span class="ot">code</span>.<span class="fu">obj</span> += <span class="ot">c</span>.<span class="fu">str2hex</span>(str); <span class="co">// 將字串內容 (例如 Hello!) 轉為 16 進位 (例如 68656C6C6F21)</span>
+            } <span class="kw">else</span> <span class="kw">if</span> (args[i].<span class="fu">match</span>(<span class="ot">/</span><span class="fl">^</span><span class="bn">\d</span><span class="fl">+$</span><span class="ot">/</span>)) {  <span class="co">// 該參數為常數，例如 26</span>
+              <span class="ot">code</span>.<span class="fu">obj</span> += <span class="ot">c</span>.<span class="fu">hex</span>(<span class="fu">parseInt</span>(args[i]), unitSize*<span class="dv">2</span>); <span class="co">// 將常數轉為 16 進位目的碼 (例如 26 轉為 1A)</span>
+            } <span class="kw">else</span> { <span class="co">// 該參數為標記，將標記轉為記憶體位址，例如 msgptr: WORD msg 中的 msg 轉為位址 (例如：00000044)</span>
+              labelCode = <span class="kw">this</span>.<span class="fu">symTable</span>[args[i]]; <span class="co">// 取得符號表內的物件</span>
+              <span class="ot">code</span>.<span class="fu">obj</span> += <span class="ot">c</span>.<span class="fu">hex</span>(<span class="ot">labelCode</span>.<span class="fu">address</span>, unitSize*<span class="dv">2</span>); <span class="co">// 取得位址並轉為 16 進位，塞入目的碼中。</span>
+            }
+          }
+          <span class="kw">break</span>;
+        } <span class="co">// case BYTE:</span>
+      } <span class="co">// switch</span>
+      <span class="kw">break</span>;
+    } <span class="co">// case &#39;D&#39;</span>
+  }
+} 
+
+<span class="co">// 使用範例 node as0 sum.as0 sum.ob0</span>
+<span class="co">// 其中 argv[2] 為組合語言檔, argv[3] 為目的檔</span>
+<span class="ot">as0</span>.<span class="fu">assemble</span>(<span class="ot">process</span>.<span class="fu">argv</span>[<span class="dv">2</span>], <span class="ot">process</span>.<span class="fu">argv</span>[<span class="dv">3</span>]); </code></pre>
+<p>在 as0.js 組譯器中我們還匯入了 cpu0.js 這個模組，雖然此模組已經於上一期當中介紹過了，不過由於上一期有幾個指令型態 設錯了 (LDR, STR, LBR, SBR 應該是 A 格式，上一期當中誤植為 L 格式)，因此我們再度列出 cpu0.js 的更正後內容如下：</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> opTable = <span class="fu">require</span>(<span class="st">&quot;./optable&quot;</span>); <span class="co">// 引用指令表 opTable 物件</span>
+
+<span class="co">// 指令陣列</span>
+<span class="kw">var</span> opList = [ <span class="st">&quot;LD 00 L&quot;</span>, <span class="st">&quot;ST  01 L&quot;</span>, <span class="st">&quot;LDB 02 L&quot;</span>,  <span class="st">&quot;STB 03 L&quot;</span>, <span class="st">&quot;LDR 04 A&quot;</span>, 
+<span class="st">&quot;STR 05 A&quot;</span>, <span class="st">&quot;LBR 06 A&quot;</span>,  <span class="st">&quot;SBR 07 A&quot;</span>,  <span class="st">&quot;LDI 08 L&quot;</span>, <span class="st">&quot;CMP 10 A&quot;</span>, <span class="st">&quot;MOV 12 A&quot;</span>, 
+<span class="st">&quot;ADD 13 A&quot;</span>,  <span class="st">&quot;SUB 14 A&quot;</span>,  <span class="st">&quot;MUL 15 A&quot;</span>, <span class="st">&quot;DIV 16 A&quot;</span>,  <span class="st">&quot;AND 18 A&quot;</span>, <span class="st">&quot;OR  19 A&quot;</span>,  <span class="st">&quot;XOR 1A A&quot;</span>,  
+<span class="st">&quot;ADDI 1B A&quot;</span>, <span class="st">&quot;ROL 1C A&quot;</span>,  <span class="st">&quot;ROR 1D A&quot;</span>, <span class="st">&quot;SHL 1E A&quot;</span>, <span class="st">&quot;SHR 1F A&quot;</span>,  
+<span class="st">&quot;JEQ 20 J&quot;</span>, <span class="st">&quot;JNE 21 J&quot;</span>,  <span class="st">&quot;JLT 22 J&quot;</span>, <span class="st">&quot;JGT 23 J&quot;</span>, <span class="st">&quot;JLE 24 J&quot;</span>,  <span class="st">&quot;JGE 25 J&quot;</span>, <span class="st">&quot;JMP 26 J&quot;</span>, 
+<span class="st">&quot;SWI 2A J&quot;</span>, <span class="st">&quot;JSUB 2B J&quot;</span>,<span class="st">&quot;RET 2C J&quot;</span>, <span class="st">&quot;PUSH 30 J&quot;</span>, <span class="st">&quot;POP 31 J&quot;</span>,  <span class="st">&quot;PUSHB 32 J&quot;</span>, 
+<span class="st">&quot;POPB 33 J&quot;</span>, <span class="st">&quot;RESW F0 D&quot;</span>, <span class="st">&quot;RESB F1 D&quot;</span>, <span class="st">&quot;WORD F2 D&quot;</span>, <span class="st">&quot;BYTE F3 D&quot;</span>];
+
+<span class="kw">var</span> cpu = { <span class="st">&quot;opTable&quot;</span> : <span class="kw">new</span> <span class="fu">opTable</span>(opList) }; <span class="co">// cpu0 處理器物件，內含一個指令表 opTable</span>
+
+<span class="kw">if</span> (<span class="ot">process</span>.<span class="fu">argv</span>[<span class="dv">3</span>] == <span class="st">&quot;-t&quot;</span>) <span class="co">// 如果使用 node cpu0 -t 可以印出指令表</span>
+    <span class="ot">cpu</span>.<span class="ot">opTable</span>.<span class="fu">dump</span>();
+
+<span class="ot">module</span>.<span class="fu">exports</span> = cpu; <span class="co">// 匯出 cpu0 模組。</span></code></pre>
+<h2 id="程式說明"><a href="#程式說明">程式說明</a></h2>
+<p>在上述的 as.js 程式中，第一階段 pass1() 的工作是將每個組合語言指令的位址編好，並紀錄下所有符號的位址， 這個過程顯示在組譯報表的 PASS1 部分，您可以看到上述 as0 組譯器的輸出範例中，每個指令的位址都被計算出來了， 如下所示：</p>
+<pre><code>=================PASS1================
+0000          LD       R1,sum           L 00
+0004          LD       R2,i             L 00
+0008          LDI      R3,10            L 08
+000C FOR      CMP      R2,R3            A 10
+0010          JGT      EXIT             J 23
+0014          ADD      R1,R1,R2         A 13
+0018          ADDI     R2,R2,1          A 1B
+001C          JMP      FOR              J 26
+0020 EXIT     ST       R1,sum           L 01
+0024          ST       R2,i             L 01
+0028          LD       R9,msgptr        L 00
+002C          SWI      3                J 2A
+0030          MOV      R9,R1            A 12
+0034          SWI      4                J 2A
+0038          RET                       J 2C
+003C i        RESW     1                D F0
+0040 sum      WORD     0                D F2
+0044 msg      BYTE     &quot;1+...+10=&quot;,0    D F3
+004E msgptr   WORD     msg              D F2</code></pre>
+<p>而且在 PASS1 完成之後，所有符號的位址都會被記錄在符號表當中，如下所示：</p>
+<pre><code>===============SYMBOL TABLE=========
+FOR      000C
+EXIT     0020
+i        003C
+sum      0040
+msg      0044
+msgptr   004E</code></pre>
+<p>接著在 PASS2 當中，我們就可以利用這些符號表中的位址，編制出每個指令中的符號的「定址方式、相對位址」等等，如下表所示：</p>
+<pre><code>=============PASS2==============
+0000          LD       R1,sum           L 00 001F003C
+0004          LD       R2,i             L 00 002F0034
+0008          LDI      R3,10            L 08 0830000A
+000C FOR      CMP      R2,R3            A 10 10230000
+0010          JGT      EXIT             J 23 2300000C
+0014          ADD      R1,R1,R2         A 13 13112000
+0018          ADDI     R2,R2,1          A 1B 1B220001
+001C          JMP      FOR              J 26 26FFFFEC
+0020 EXIT     ST       R1,sum           L 01 011F001C
+0024          ST       R2,i             L 01 012F0014
+0028          LD       R9,msgptr        L 00 009F0022
+002C          SWI      3                J 2A 2A000003
+0030          MOV      R9,R1            A 12 12910000
+0034          SWI      4                J 2A 2A000004
+0038          RET                       J 2C 2C000000
+003C i        RESW     1                D F0 00000000
+0040 sum      WORD     0                D F2 00000000
+0044 msg      BYTE     &quot;1+...+10=&quot;,0    D F3 312B2E2E2E2B31303D00
+004E msgptr   WORD     msg              D F2 00000044</code></pre>
+<p>由於 CPU0 設計得很簡單，因此對於一般的指令而言(像是 ADD, MOV, RET 等)，編制出機器碼是很容易的，例如 RET 指令不包含任何參數，因此其機器碼就是在指令碼 OP=2C 後面補 0，直到填滿 32bit (8 個 16 進位數字) 為止， 而 ADD R1,R1,R2 的編碼也很容易，就是將指令碼 OP=13 補上暫存器代號 1, 1, 2 之後再補 0，形成 13112000 的編碼。</p>
+<p>最難處理的是有標記的指令，舉例而言，像是 JGT EXIT 的機器碼 2300000C 與 JMP FOR 的機器碼 26FFFFEC 是怎麼來的呢？</p>
+<p>關於這點，我們必須用較長的篇幅解釋一下：</p>
+<p>在上述 AS0 程式的設計當中，我們一律用「相對於程式計數器 PC 的定址法」來進行標記的編碼 (cx = label.address-PC)， 例如在 JGT EXIT 這個指令中，由於標記 EXIT 的位址是 0020 ，而 JGT EXIT 指令的位址為 0010，因此兩者之差距為 0010，但是由於 JGT EXIT 指令執行時其程式計數器 PC 已經進到下一個位址 (0014) 了(在指令擷取階段完成後就會進到下一個位址)， 所以 PC 與 FOR 標記之間的位址差距為 (cx = label.address-PC= 0020-0014 = 000C) (請注意這是用 16 進位的減法)， 因此整個 JGT EXIT 指令就被組譯為 JGT EXIT = JGT R15+cx = 23 F 000C。 (其中 R15 是 CPU0 的程式計數器 PC，所以暫存器 Ra 部分編為 15 的十六進位值 F)。</p>
+<p>但是、有時候相對定址若是負值，也就是標記在指令的前面，像是 JMP FOR 的情況時，最後 cx = label.address-PC 計算出來會是 負值，此時就必須採用 2 補數表示法，例如 JMP FOR 的情況 (cx = label.address-PC = 000C-0020 = -0014) (請注意這是用 16 進位的減法)， 採用 2 補數之後就會變成 FFFFEC，因此 JMP FOR 被編為 26 F FFFEC。</p>
+<h2 id="結語-1"><a href="#結語-1">結語</a></h2>
+<p>現在、我們已經完成了組譯器 AS0 的設計，並解析了整個組譯器的原始碼，希望透過這種方式，可以讓讀者瞭解 整個組譯器的設計過程。在後續的文章之中，我們還會介紹開放電腦計畫中「虛擬機、編譯器」的 JavaScript 原始碼， 以及實作 CPU0 處理器的 Verilog 原始碼。然後再進入作業系統的設計部分，希望透過這種方式，可以讓讀者瞭解 如何「自己動手設計一台電腦」，完成「開放電腦計畫」的主要目標。</p>
+<h1 id="編譯器"><a href="#編譯器">編譯器</a></h1>
+<p>在前面的文章中，我們首先介紹了整體架構，接著設計出了 CPU0 的指令集，然後寫出了 AS0 組譯器與 VM0 虛擬機：</p>
+<p>但是、直到目前為止，我們都還沒有為開放電腦計畫打造出「高階語言」，因此本文將設計出一個 名為 J0 的高階語言 (代表JavaScript 的精簡版)，並採用 JavaScript 去實作，然後在 node.js 平台中執行。</p>
+<p>有了 J0 語言與 J0C 編譯器之後，我們就可以創建出以下的工具鏈：</p>
+<blockquote>
+<p>J0 語言 ( j0c 編譯器) =&gt; IR0 中間碼 (ir2as 轉換器) =&gt; CPU0 組合語言 (AS0 組譯器) =&gt; CPU0 機器碼 (VM0 虛擬機執行或 CPU0 FPGA 執行)</p>
+</blockquote>
+<h2 id="編譯器高階語言轉中間碼---j0c"><a href="#編譯器高階語言轉中間碼---j0c">編譯器：高階語言轉中間碼 - j0c</a></h2>
+<p>在前面的文章中，我們首先介紹了整體架構，接著設計出了 CPU0 的指令集，然後寫出了 AS0 組譯器與 VM0 虛擬機：</p>
+<p>但是、直到目前為止，我們都還沒有為開放電腦計畫打造出「高階語言」，因此本文將設計出一個 名為 J0 的高階語言 (代表JavaScript 的精簡版)，並採用 JavaScript 去實作，然後在 node.js 平台中執行。</p>
+<p>有了 J0 語言與 J0C 編譯器之後，我們就可以創建出以下的工具鏈：</p>
+<blockquote>
+<p>J0 語言 ( j0c 編譯器) =&gt; IR0 中間碼 (ir2as 轉換器) =&gt; CPU0 組合語言 (AS0 組譯器) =&gt; CPU0 機器碼 (VM0 虛擬機執行或 CPU0 FPGA 執行)</p>
+</blockquote>
+<h3 id="javascript-簡化版----j0-語言"><a href="#javascript-簡化版----j0-語言">JavaScript 簡化版 -- J0 語言</a></h3>
+<p>以下是一個 J0 語言的程式範例，支援了 function, while, if, for 等語句，並且支援了「陣列與字典」等資料結構。</p>
+<p>檔案：test.j0</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript">s = <span class="fu">sum</span>(<span class="dv">10</span>);
+
+<span class="kw">function</span> <span class="fu">sum</span>(n) {
+  s = <span class="dv">0</span>;
+  i=<span class="dv">1</span>;
+  <span class="kw">while</span> (i&lt;=<span class="dv">10</span>) {
+    s = s + i;
+    i++;
+  }
+  <span class="kw">return</span> s;
+}
+
+m = <span class="fu">max</span>(<span class="dv">3</span>,<span class="dv">5</span>);
+
+<span class="kw">function</span> <span class="fu">max</span>(a, b) {
+  <span class="kw">if</span> (a &gt; b)
+    <span class="kw">return</span> a;
+  <span class="kw">else</span>
+    <span class="kw">return</span> b;
+}
+
+<span class="kw">function</span> <span class="fu">total</span>(a) {
+  s = <span class="dv">0</span>;
+  <span class="kw">for</span> (i <span class="kw">in</span> a) {
+    s = s + a[i];
+  }
+  <span class="kw">return</span> s;
+}
+
+a = [ <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">7</span>, <span class="dv">2</span>, <span class="dv">6</span>];
+t = <span class="fu">total</span>(a);
+word = { <span class="dt">e</span>:<span class="st">&quot;dog&quot;</span>, <span class="dt">c</span>:<span class="st">&quot;狗&quot;</span> };</code></pre>
+<h3 id="原始碼"><a href="#原始碼">原始碼</a></h3>
+<p>接著我們用 node.js + javascript 實作出 j0c 編譯器，該編譯器可以將 J0 語言的程式，編譯成一種平坦化的中間碼格式，我們稱這種格式為 IR0，也就是 Intermediate Representation 0 的意思，以下是 j0c 編譯器的完整程式碼。</p>
+<p>檔案：j0c.js</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="co">// j0c 編譯器，用法範例： node j0c test.j0</span>
+<span class="kw">var</span> fs = <span class="fu">require</span>(<span class="st">&quot;fs&quot;</span>);
+<span class="kw">var</span> util = <span class="fu">require</span>(<span class="st">&quot;util&quot;</span>);
+<span class="kw">var</span> log = <span class="ot">console</span>.<span class="fu">log</span>;     <span class="co">// 將 console.log 名稱縮短一點</span>
+<span class="kw">var</span> format = <span class="ot">util</span>.<span class="fu">format</span>;  <span class="co">// 字串格式化</span>
+<span class="kw">var</span> tokens = [];
+<span class="kw">var</span> tokenIdx = <span class="dv">0</span>;
+<span class="kw">var</span> end = <span class="st">&quot;$END&quot;</span>;
+<span class="kw">var</span> funcName = <span class="st">&quot;main&quot;</span>;
+<span class="kw">var</span> funcStack = [ funcName ];
+<span class="kw">var</span> irText = <span class="st">&quot;&quot;</span>;
+<span class="kw">var</span> symTable = {};
+symTable[funcName] = { <span class="dt">type</span>:<span class="st">&quot;function&quot;</span>, <span class="dt">name</span>:<span class="st">&quot;main&quot;</span>, <span class="dt">pcodes</span>:[] };
+
+<span class="kw">var</span> scan=<span class="kw">function</span>(text) { 
+  <span class="kw">var</span> re = <span class="kw">new</span> <span class="fu">RegExp</span>(<span class="ot">/</span><span class="fl">(\/\*</span><span class="bn">[</span><span class="fl">\s\S</span><span class="bn">]</span><span class="fl">*?\*\/)|(\/\/</span><span class="bn">[</span><span class="fl">^\r\n</span><span class="bn">]</span><span class="fl">)|(</span><span class="ot">&quot;.</span><span class="fl">*?</span><span class="ot">&quot;</span><span class="fl">)|(</span><span class="bn">\d</span><span class="fl">+(\.</span><span class="bn">\d</span><span class="fl">*)?)|(</span><span class="bn">[a-zA-Z]\w</span><span class="fl">*)|(</span><span class="bn">[&gt;=&lt;!</span><span class="fl">\+\-\*\/</span><span class="bn">&amp;%|]</span><span class="fl">+)|(</span><span class="bn">\s</span><span class="fl">+)|(</span><span class="ot">.</span><span class="fl">)</span><span class="ot">/gm</span>);
+  <span class="kw">var</span> types = [ <span class="st">&quot;&quot;</span>, <span class="st">&quot;COMMENT&quot;</span>, <span class="st">&quot;COMMENT&quot;</span>, <span class="st">&quot;STRING&quot;</span>, <span class="st">&quot;INTEGER&quot;</span>, <span class="st">&quot;FLOAT&quot;</span>, <span class="st">&quot;ID&quot;</span>, <span class="st">&quot;OP2&quot;</span>, <span class="st">&quot;SPACE&quot;</span>, <span class="st">&quot;CH&quot;</span> ];
+  tokens = [];
+  tokenIdx = <span class="dv">0</span>;
+  <span class="kw">var</span> lines = <span class="dv">1</span>, m;
+  <span class="kw">while</span>((m = <span class="ot">re</span>.<span class="fu">exec</span>(text)) !== <span class="kw">null</span>) {
+    <span class="kw">var</span> token = m[<span class="dv">0</span>], type;
+    <span class="kw">for</span> (i=<span class="dv">1</span>; i&lt;=<span class="dv">9</span>; i++) { 
+      <span class="kw">if</span> (m[i] !== <span class="kw">undefined</span>)
+        type = types[i];
+    }
+    <span class="kw">if</span> (!<span class="ot">token</span>.<span class="fu">match</span>(<span class="ot">/</span><span class="fl">^</span><span class="bn">[</span><span class="fl">\s\r\n</span><span class="bn">]</span><span class="ot">/</span>) &amp;&amp; type!=<span class="st">&quot;COMMENT&quot;</span>) {
+      <span class="ot">tokens</span>.<span class="fu">push</span>({ <span class="st">&quot;token&quot;</span>:token, <span class="st">&quot;type&quot;</span>:type, <span class="st">&quot;lines&quot;</span>:lines });
+    }
+    lines += <span class="ot">token</span>.<span class="fu">split</span>(<span class="ot">/</span><span class="bn">\n</span><span class="ot">/</span>).<span class="fu">length</span><span class="dv">-1</span>;
+  }
+  <span class="ot">tokens</span>.<span class="fu">push</span>({ <span class="st">&quot;token&quot;</span>: end, <span class="st">&quot;type&quot;</span>:end, <span class="st">&quot;lines&quot;</span>:lines });
+  <span class="kw">return</span> tokens;
+}
+
+<span class="kw">var</span> error=<span class="kw">function</span>(expect) {  
+  <span class="kw">var</span> token = tokens[tokenIdx];
+  <span class="fu">log</span>(<span class="st">&quot;Error: line=%d token (%s) do not match expect (%s)!&quot;</span>, <span class="ot">token</span>.<span class="fu">lines</span>, <span class="ot">token</span>.<span class="fu">token</span>, expect); 
+  <span class="fu">log</span>(<span class="kw">new</span> <span class="fu">Error</span>().<span class="fu">stack</span>);
+  <span class="ot">process</span>.<span class="fu">exit</span>(<span class="dv">1</span>);
+}
+
+<span class="kw">var</span> skip=<span class="kw">function</span>(o) { <span class="kw">if</span> (<span class="fu">isNext</span>(o)) <span class="fu">next</span>(o); }
+
+<span class="kw">var</span> next=<span class="kw">function</span>(o) {
+  <span class="kw">if</span> (o==<span class="kw">null</span> || <span class="fu">isNext</span>(o)) {
+    <span class="kw">return</span> tokens[tokenIdx++].<span class="fu">token</span>;
+  }
+  <span class="fu">error</span>(o);
+}
+
+<span class="kw">var</span> isNext=<span class="kw">function</span>(o) {
+  <span class="kw">if</span> (tokenIdx &gt;= <span class="ot">tokens</span>.<span class="fu">length</span>) 
+    <span class="kw">return</span> <span class="kw">false</span>;
+  <span class="kw">var</span> token = tokens[tokenIdx].<span class="fu">token</span>;
+  <span class="kw">if</span> (o <span class="kw">instanceof</span> RegExp) {
+    <span class="kw">return</span> <span class="ot">token</span>.<span class="fu">match</span>(o);
+  } <span class="kw">else</span>
+    <span class="kw">return</span> (token == o);
+}
+
+<span class="kw">var</span> nextType=<span class="kw">function</span>(o) {
+  <span class="kw">if</span> (o==<span class="kw">null</span> || <span class="fu">isNextType</span>(o)) {
+    <span class="kw">return</span> tokens[tokenIdx++].<span class="fu">token</span>;
+  }
+  <span class="fu">error</span>(o);
+}
+
+<span class="kw">var</span> isNextType=<span class="kw">function</span>(pattern) {
+  <span class="kw">var</span> type = tokens[tokenIdx].<span class="fu">type</span>;
+  <span class="kw">return</span> ((<span class="st">&quot;|&quot;</span>+pattern+<span class="st">&quot;|&quot;</span>).<span class="fu">indexOf</span>(<span class="st">&quot;|&quot;</span>+type+<span class="st">&quot;|&quot;</span>)&gt;=<span class="dv">0</span>);
+}
+
+<span class="kw">var</span> pcode=<span class="kw">function</span>(label, op, p, p1, p2) {
+  symTable[funcName].<span class="ot">pcodes</span>.<span class="fu">push</span>({<span class="st">&quot;label&quot;</span>:label, <span class="st">&quot;op&quot;</span>:op, <span class="st">&quot;p&quot;</span>:p, <span class="st">&quot;p1&quot;</span>:p1, <span class="st">&quot;p2&quot;</span>:p2});
+  <span class="kw">var</span> irCode = <span class="fu">format</span>(<span class="st">&quot;%s</span><span class="ch">\t</span><span class="st">%s</span><span class="ch">\t</span><span class="st">%s</span><span class="ch">\t</span><span class="st">%s</span><span class="ch">\t</span><span class="st">%s&quot;</span>, label, op, p, p1, p2);
+  <span class="fu">log</span>(irCode);
+  irText += irCode+<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>;
+}
+
+<span class="kw">var</span> tempIdx = <span class="dv">1</span>;
+<span class="kw">var</span> nextTemp=<span class="kw">function</span>() { 
+  <span class="kw">var</span> name=<span class="st">&quot;T&quot;</span>+tempIdx++;
+  symTable[name] = { <span class="dt">type</span>:<span class="st">&quot;var&quot;</span>, <span class="dt">name</span>:name };
+  <span class="kw">return</span> name; 
+}
+
+<span class="kw">var</span> labelIdx = <span class="dv">1</span>;
+<span class="kw">var</span> nextLabel=<span class="kw">function</span>() { <span class="kw">return</span> <span class="st">&quot;L&quot;</span>+labelIdx++; }
+
+<span class="kw">var</span> elseIdx = <span class="dv">1</span>;
+<span class="kw">var</span> nextElse=<span class="kw">function</span>() { <span class="kw">return</span> <span class="st">&quot;else&quot;</span>+elseIdx++; }
+
+<span class="kw">var</span> compile=<span class="kw">function</span>(text) {
+  <span class="fu">scan</span>(text);
+  <span class="fu">PROG</span>();
+}
+
+<span class="co">// PROG = STMTS</span>
+<span class="kw">var</span> PROG=<span class="kw">function</span>() {
+  <span class="fu">STMTS</span>();
+}
+
+<span class="co">// STMTS = STMT*</span>
+<span class="kw">var</span> STMTS=<span class="kw">function</span>() {
+  <span class="kw">while</span> (!<span class="fu">isNext</span>(<span class="st">&quot;}&quot;</span>) &amp;&amp; !<span class="fu">isNext</span>(end))
+    <span class="fu">STMT</span>();
+}
+
+<span class="co">// BLOCK = { STMTS }</span>
+<span class="kw">var</span> BLOCK=<span class="kw">function</span>() {
+  <span class="fu">next</span>(<span class="st">&quot;{&quot;</span>);
+  <span class="fu">STMTS</span>();
+  <span class="fu">next</span>(<span class="st">&quot;}&quot;</span>);
+}
+
+<span class="co">// STMT = FOR | WHILE | IF | FUNCTION | return EXP ; | ASSIGN ; | BLOCK</span>
+<span class="kw">var</span> STMT=<span class="kw">function</span>() {
+  <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;for&quot;</span>)) {
+    <span class="fu">FOR</span>();
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;while&quot;</span>)) {
+    <span class="fu">WHILE</span>();
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;if&quot;</span>)) {
+    <span class="fu">IF</span>();
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;function&quot;</span>)) {
+    <span class="fu">FUNCTION</span>();
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;return&quot;</span>)) {
+    <span class="fu">next</span>(<span class="st">&quot;return&quot;</span>);
+    <span class="kw">var</span> e = <span class="fu">EXP</span>();
+    <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;return&quot;</span>, e, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="fu">next</span>(<span class="st">&quot;;&quot;</span>);
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;{&quot;</span>)) {
+    <span class="fu">BLOCK</span>();
+  } <span class="kw">else</span> {
+    <span class="fu">ASSIGN</span>();
+    <span class="fu">next</span>(<span class="st">&quot;;&quot;</span>);
+  }
+}
+
+<span class="co">// FOR = for (ID in EXP) BLOCK</span>
+<span class="kw">var</span> FOR=<span class="kw">function</span>() {
+  <span class="kw">var</span> startLabel = <span class="fu">nextLabel</span>(), exitLabel = <span class="fu">nextLabel</span>();
+  <span class="fu">next</span>(<span class="st">&quot;for&quot;</span>); 
+  <span class="fu">next</span>(<span class="st">&quot;(&quot;</span>); 
+  <span class="kw">var</span> id = <span class="fu">nextType</span>(<span class="st">&quot;ID&quot;</span>);
+  <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;=&quot;</span>, id, <span class="st">&quot;0&quot;</span>, <span class="st">&quot;&quot;</span>);
+  <span class="fu">next</span>(<span class="st">&quot;in&quot;</span>);
+  <span class="kw">var</span> e=<span class="fu">EXP</span>(); 
+  <span class="fu">next</span>(<span class="st">&quot;)&quot;</span>);
+  <span class="kw">var</span> t = <span class="fu">nextTemp</span>();
+  <span class="fu">pcode</span>(startLabel, <span class="st">&quot;&lt;&quot;</span>, t, id, e+<span class="st">&quot;.length&quot;</span>);
+  <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;if0&quot;</span>, t, exitLabel, <span class="st">&quot;&quot;</span>);
+  <span class="fu">BLOCK</span>(); 
+  <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;goto&quot;</span>, startLabel, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+  <span class="fu">pcode</span>(exitLabel, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+}
+
+<span class="co">// WHILE = while (EXP) BLOCK</span>
+<span class="kw">var</span> WHILE=<span class="kw">function</span>() {
+  <span class="kw">var</span> startLabel = <span class="fu">nextLabel</span>(), exitLabel=<span class="fu">nextLabel</span>();
+  <span class="fu">pcode</span>(startLabel, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+  <span class="fu">next</span>(<span class="st">&quot;while&quot;</span>); 
+  <span class="fu">next</span>(<span class="st">&quot;(&quot;</span>); 
+  <span class="kw">var</span> e = <span class="fu">EXP</span>(); 
+  <span class="fu">next</span>(<span class="st">&quot;)&quot;</span>); 
+  <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;if0&quot;</span>, e, exitLabel, <span class="st">&quot;&quot;</span>);
+  <span class="fu">BLOCK</span>();
+  <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;goto&quot;</span>, startLabel, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+  <span class="fu">pcode</span>(exitLabel, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+}
+
+<span class="co">// IF = if (EXP) STMT (else STMT)?</span>
+<span class="kw">var</span> IF=<span class="kw">function</span>() {
+  <span class="fu">next</span>(<span class="st">&quot;if&quot;</span>); 
+  <span class="fu">next</span>(<span class="st">&quot;(&quot;</span>); 
+  <span class="kw">var</span> e = <span class="fu">EXP</span>(); 
+  <span class="fu">next</span>(<span class="st">&quot;)&quot;</span>); 
+  <span class="kw">var</span> elseLabel = <span class="fu">nextLabel</span>();
+  <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;if0&quot;</span>, e, elseLabel, <span class="st">&quot;&quot;</span>);
+  <span class="fu">STMT</span>();
+  <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;else&quot;</span>)) {
+    <span class="fu">next</span>(<span class="st">&quot;else&quot;</span>);
+    <span class="fu">pcode</span>(elseLabel, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="fu">STMT</span>();
+  }
+}
+
+<span class="co">// ASSIGN = ID[++|--]?(=EXP?)?</span>
+<span class="kw">var</span> ASSIGN=<span class="kw">function</span>() {
+  <span class="kw">var</span> id, op, hasNext = <span class="kw">false</span>;
+  <span class="kw">if</span> (<span class="fu">isNextType</span>(<span class="st">&quot;ID&quot;</span>)) {
+    id = <span class="fu">nextType</span>(<span class="st">&quot;ID&quot;</span>);
+    symTable[id] = { <span class="dt">type</span>:<span class="st">&quot;var&quot;</span>, <span class="dt">name</span>:id };
+    <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;++&quot;</span>) || <span class="fu">isNext</span>(<span class="st">&quot;--&quot;</span>)) {
+      <span class="kw">var</span> op = <span class="fu">next</span>(<span class="kw">null</span>);
+      <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, op, id, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    }
+    hasNext = <span class="kw">true</span>;
+  }
+  <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;=&quot;</span>)) {
+    <span class="fu">next</span>(<span class="st">&quot;=&quot;</span>);
+    <span class="kw">var</span> e = <span class="fu">EXP</span>();
+    <span class="kw">if</span> (id != <span class="kw">undefined</span>)
+      <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;=&quot;</span>, id, e, <span class="st">&quot;&quot;</span>);
+    hasNext = <span class="kw">true</span>;
+  }
+  <span class="kw">if</span> (!hasNext)
+    <span class="kw">return</span> <span class="fu">EXP</span>();
+}
+
+<span class="co">// EXP=TERM (OP2 TERM)?</span>
+<span class="kw">var</span> EXP=<span class="kw">function</span>() {
+  t1 = <span class="fu">TERM</span>();
+  <span class="kw">if</span> (<span class="fu">isNextType</span>(<span class="st">&quot;OP2&quot;</span>)) {
+    <span class="kw">var</span> op2 = <span class="fu">next</span>(<span class="kw">null</span>);
+    t2 = <span class="fu">TERM</span>();
+    <span class="kw">var</span> t = <span class="fu">nextTemp</span>();
+    <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, op2, t, t1, t2);
+    t1 = t;
+  }
+  <span class="kw">return</span> t1;
+}
+
+<span class="co">// TERM=STRING | INTEGER | FLOAT | ARRAY | TABLE | ID (TERMS)? | ID [TERMS]?| ( EXP )</span>
+<span class="kw">var</span> TERM=<span class="kw">function</span>() {
+  <span class="kw">if</span> (<span class="fu">isNextType</span>(<span class="st">&quot;STRING|INTEGER|FLOAT&quot;</span>)) {
+    <span class="kw">return</span> <span class="fu">next</span>(<span class="kw">null</span>);
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;[&quot;</span>)) {
+    <span class="kw">return</span> <span class="fu">ARRAY</span>();
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;{&quot;</span>)) {
+    <span class="kw">return</span> <span class="fu">TABLE</span>();
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="fu">isNextType</span>(<span class="st">&quot;ID&quot;</span>)) { <span class="co">// function call</span>
+    <span class="kw">var</span> id = <span class="fu">next</span>(<span class="kw">null</span>);
+    <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;(&quot;</span>)) { 
+      <span class="fu">next</span>(<span class="st">&quot;(&quot;</span>); 
+      <span class="kw">while</span> (!<span class="fu">isNext</span>(<span class="st">&quot;)&quot;</span>)) {
+        <span class="co">// TERM();</span>
+        <span class="kw">var</span> arg = <span class="fu">next</span>(<span class="kw">null</span>);
+        <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;arg&quot;</span>, arg, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+        <span class="fu">skip</span>(<span class="st">&quot;,&quot;</span>);
+      }
+      <span class="fu">next</span>(<span class="st">&quot;)&quot;</span>);
+      <span class="kw">var</span> ret = <span class="fu">nextTemp</span>();
+      <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;call&quot;</span>, ret, id, <span class="st">&quot;&quot;</span>);
+      <span class="kw">return</span> ret;
+    }
+    <span class="kw">var</span> array = id;
+    <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;[&quot;</span>)) { 
+      <span class="fu">next</span>(<span class="st">&quot;[&quot;</span>); 
+      <span class="kw">while</span> (!<span class="fu">isNext</span>(<span class="st">&quot;]&quot;</span>)) {
+        <span class="kw">var</span> idx = <span class="fu">TERM</span>();
+        <span class="kw">var</span> t = <span class="fu">nextTemp</span>();
+        <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;[]&quot;</span>, t, array, idx);
+        <span class="fu">skip</span>(<span class="st">&quot;,&quot;</span>);
+        array = t;
+      }
+      <span class="fu">next</span>(<span class="st">&quot;]&quot;</span>);
+      <span class="kw">return</span> array;
+    }
+    <span class="kw">return</span> id;
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="fu">isNext</span>(<span class="st">&quot;(&quot;</span>)) {
+    <span class="fu">next</span>(<span class="st">&quot;(&quot;</span>);  
+    <span class="kw">var</span> e = <span class="fu">EXP</span>();  
+    <span class="fu">next</span>(<span class="st">&quot;)&quot;</span>);
+    <span class="kw">return</span> e;
+  } <span class="kw">else</span> <span class="fu">error</span>();
+}
+
+<span class="co">// FUNCTION = function ID(ARGS) BLOCK</span>
+<span class="kw">var</span> FUNCTION = <span class="kw">function</span>() {
+  <span class="fu">next</span>(<span class="st">&quot;function&quot;</span>);
+  funcName = <span class="fu">nextType</span>(<span class="st">&quot;ID&quot;</span>);
+  <span class="ot">funcStack</span>.<span class="fu">push</span>(funcName);
+  symTable[funcName] = { <span class="dt">type</span>:<span class="st">&quot;function&quot;</span>, <span class="dt">name</span>:funcName, <span class="dt">pcodes</span>: [] };
+  <span class="fu">pcode</span>(funcName, <span class="st">&quot;function&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+  <span class="fu">next</span>(<span class="st">&quot;(&quot;</span>);
+  <span class="kw">while</span> (!<span class="fu">isNext</span>(<span class="st">&quot;)&quot;</span>)) {
+    <span class="kw">var</span> arg=<span class="fu">nextType</span>(<span class="st">&quot;ID&quot;</span>);
+    <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;param&quot;</span>, arg, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="fu">skip</span>(<span class="st">&quot;,&quot;</span>);
+  }
+  <span class="fu">next</span>(<span class="st">&quot;)&quot;</span>); 
+  <span class="fu">BLOCK</span>();
+  <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;endf&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+  <span class="ot">funcStack</span>.<span class="fu">pop</span>();
+  funcName = funcStack[<span class="ot">funcStack</span>.<span class="fu">length</span><span class="dv">-1</span>];
+}
+
+<span class="co">// ARRAY = [ TERMS ];</span>
+<span class="kw">var</span> ARRAY = <span class="kw">function</span>() {
+  <span class="fu">next</span>(<span class="st">&quot;[&quot;</span>);
+  <span class="kw">var</span> array = <span class="fu">nextTemp</span>();
+  <span class="fu">pcode</span>(array, <span class="st">&quot;array&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+  <span class="kw">while</span> (!<span class="fu">isNext</span>(<span class="st">&quot;]&quot;</span>)) {
+    <span class="kw">var</span> t = <span class="fu">TERM</span>();
+    <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;push&quot;</span>, array, t, <span class="st">&quot;&quot;</span>);
+    <span class="fu">skip</span>(<span class="st">&quot;,&quot;</span>);
+  }
+  <span class="fu">next</span>(<span class="st">&quot;]&quot;</span>);
+  <span class="kw">return</span> array;
+}
+
+<span class="co">// TABLE = { (TERM:TERM)* }</span>
+<span class="kw">var</span> TABLE = <span class="kw">function</span>() {
+  <span class="fu">next</span>(<span class="st">&quot;{&quot;</span>); 
+  <span class="kw">var</span> table = <span class="fu">nextTemp</span>();
+  <span class="fu">pcode</span>(table, <span class="st">&quot;table&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+  <span class="kw">while</span> (!<span class="fu">isNext</span>(<span class="st">&quot;}&quot;</span>)) {
+    <span class="kw">var</span> key = <span class="fu">TERM</span>(); 
+    <span class="fu">next</span>(<span class="st">&quot;:&quot;</span>); 
+    <span class="kw">var</span> value = <span class="fu">TERM</span>();
+    <span class="fu">skip</span>(<span class="st">&quot;,&quot;</span>);
+    <span class="fu">pcode</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;map&quot;</span>, table, key, value);
+  }
+  <span class="fu">next</span>(<span class="st">&quot;}&quot;</span>);
+  <span class="kw">return</span> table;
+}
+
+<span class="kw">var</span> source = <span class="ot">fs</span>.<span class="fu">readFileSync</span>(<span class="ot">process</span>.<span class="fu">argv</span>[<span class="dv">2</span>], <span class="st">&quot;utf8&quot;</span>);
+<span class="fu">compile</span>(source);</code></pre>
+<h3 id="執行結果"><a href="#執行結果">執行結果</a></h3>
+<p>然後、我們可以用 node.js 來執行上述程式，並且編譯指定的 J0 程式檔，例如以下指令就用 j0c 編譯器去編譯了 test.j0 這個輸入檔，接著畫面上所輸出的就是 IR0 的中間碼。</p>
+<pre><code>D:\Dropbox\Public\web\oc\code\js&gt;node j0c test.j0
+        arg     10
+        call    T1      sum
+        =       s       T1
+sum     function
+        param   n
+        =       s       0
+        =       i       1
+L1
+        &lt;=      T2      i       10
+        if0     T2      L2
+        +       T3      s       i
+        =       s       T3
+        ++      i
+        goto    L1
+L2
+        return  s
+        endf
+        arg     3
+        arg     5
+        call    T4      max
+        =       m       T4
+max     function
+        param   a
+        param   b
+        &gt;       T5      a       b
+        if0     T5      L3
+        return  a
+L3
+        return  b
+        endf
+total   function
+        param   a
+        =       s       0
+        =       i       0
+L4      &lt;       T6      i       a.length
+        if0     T6      L5
+        []      T7      a       i
+        +       T8      s       T7
+        =       s       T8
+        goto    L4
+L5
+        return  s
+        endf
+T9      array
+        push    T9      1
+        push    T9      3
+        push    T9      7
+        push    T9      2
+        push    T9      6
+        =       a       T9
+        arg     a
+        call    T10     total
+        =       t       T10
+T11     table
+        map     T11     e       &quot;dog&quot;
+        map     T11     c       &quot;狗&quot;
+        =       word    T11
+</code></pre>
+<h3 id="結語-2"><a href="#結語-2">結語</a></h3>
+<p>在開放電腦計劃中，我們希望透過 J0 語言，以及 j0c 編譯器，用簡易的程式揭露「高階語言與編譯器」的設計原理。</p>
+<p>在下期中，我們將撰寫程式去將上述 IR0 中間碼轉換為 CPU0 的組合語言，這樣就可以接上先前所作的組譯器 AS0 與虛擬機 VM0，以形成一套簡易但完整的工具鏈。</p>
+<p>透過這樣的工具鏈，我們希望能讓熟悉程式人輕易的學會「電腦軟硬體的設計原理」。</p>
+<h2 id="編譯器中間碼轉組合語言---ir2as"><a href="#編譯器中間碼轉組合語言---ir2as">編譯器：中間碼轉組合語言 - ir2as</a></h2>
+<h3 id="前言-1"><a href="#前言-1">前言</a></h3>
+<p>在上文中我們介紹了 j0c 這個編譯器的設計方式，並且設計了一種稱為 ir0 的中間碼格式，用來做為 j0c 編譯器的輸出格式。</p>
+<p>在本文中，我們將介紹一個可以將中間碼 ir0 格式轉換成 CPU0 組合語言 (as0) 的程式，該程式稱為 ir2as0 ，這樣才能接上先前的 as0 組譯器，成為一套完整的工具鏈。</p>
+<h3 id="轉換程式"><a href="#轉換程式">轉換程式</a></h3>
+<p>以下是這個轉換程式的原始碼，該程式會將 ir0 格式的中間碼，轉換成 as0 格式的組合語言。</p>
+<p>檔案：ir2as.js</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="co">// ir2as0 中間碼轉換為組合語言，用法範例： node ir2as0 test.ir0 &gt; test.as0</span>
+<span class="kw">var</span> fs = <span class="fu">require</span>(<span class="st">&quot;fs&quot;</span>);
+<span class="kw">var</span> util = <span class="fu">require</span>(<span class="st">&quot;util&quot;</span>);
+<span class="kw">var</span> format = <span class="ot">util</span>.<span class="fu">format</span>;  <span class="co">// 字串格式化</span>
+<span class="kw">var</span> log = <span class="ot">console</span>.<span class="fu">log</span>;     <span class="co">// 將 console.log 名稱縮短一點</span>
+
+<span class="co">// 讀入中間檔，並分割成一行一行的字串</span>
+<span class="kw">var</span> lines = <span class="ot">fs</span>.<span class="fu">readFileSync</span>(<span class="ot">process</span>.<span class="fu">argv</span>[<span class="dv">2</span>], <span class="st">&quot;utf8&quot;</span>).<span class="fu">split</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>); 
+
+<span class="co">// 輸出組合語言</span>
+<span class="kw">var</span> asm=<span class="kw">function</span>(label, op, p, p1, p2) {
+  <span class="kw">var</span> asCode = <span class="fu">format</span>(<span class="st">&quot;%s</span><span class="ch">\t</span><span class="st">%s</span><span class="ch">\t</span><span class="st">%s</span><span class="ch">\t</span><span class="st">%s</span><span class="ch">\t</span><span class="st">%s&quot;</span>, label, op, p, p1, p2);
+  <span class="fu">log</span>(asCode);
+}
+
+<span class="kw">var</span> cmpCount = <span class="dv">0</span>; <span class="co">// 比較運算的標記不可重複，故加上一個 counter 以玆區分</span>
+
+<span class="co">// 將一行中間碼 line 轉換為組合語言</span>
+<span class="kw">function</span> <span class="fu">ir2as</span>(line) {
+  <span class="kw">var</span> tokens = <span class="ot">line</span>.<span class="fu">split</span>(<span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>); <span class="co">// 將中間碼分割成一個一個的欄位</span>
+  <span class="kw">var</span> label = tokens[<span class="dv">0</span>];         <span class="co">// 取出標記 label</span>
+  <span class="kw">var</span> iop = tokens[<span class="dv">1</span>], aop=<span class="st">&quot;&quot;</span>;   <span class="co">// 取出運算 iop</span>
+  <span class="kw">var</span> p = <span class="ot">tokens</span>.<span class="fu">slice</span>(<span class="dv">2</span>);       <span class="co">// 取出參數部份</span>
+  <span class="kw">if</span> (label !== <span class="st">&quot;&quot;</span>)              <span class="co">// 若有標記，直接輸出一行只含標記的組合語言</span>
+    <span class="fu">asm</span>(label, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+  <span class="kw">switch</span> (iop) {                 <span class="co">// 根據運算 iop 的內容，決定要轉成甚麼組合語言</span>
+    <span class="kw">case</span> <span class="st">&quot;=&quot;</span>:                    <span class="co">// 範例：= X Y 改為 LD R1, Y; ST R1, X</span>
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">1</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;ST&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="co">// 範例： + X A B 改為 LD R1, A;  LD R2, B; ADD R3, R1, R2; ST R3, X;</span>
+    <span class="kw">case</span> <span class="st">&quot;+&quot;</span>: <span class="kw">case</span> <span class="st">&quot;-&quot;</span>: <span class="kw">case</span> <span class="st">&quot;*&quot;</span>: <span class="kw">case</span> <span class="st">&quot;/&quot;</span>: <span class="kw">case</span> <span class="st">&quot;&lt;&lt;&quot;</span>:
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">1</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R2&quot;</span>, p[<span class="dv">2</span>], <span class="st">&quot;&quot;</span>);
+    aop = {<span class="st">&quot;+&quot;</span>:<span class="st">&quot;ADD&quot;</span>, <span class="st">&quot;-&quot;</span>:<span class="st">&quot;SUB&quot;</span>, <span class="st">&quot;*&quot;</span>:<span class="st">&quot;MUL&quot;</span>, <span class="st">&quot;/&quot;</span>:<span class="st">&quot;DIV&quot;</span>}[iop];
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, aop, <span class="st">&quot;R3&quot;</span>, <span class="st">&quot;R1&quot;</span>, <span class="st">&quot;R2&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;ST&quot;</span>, <span class="st">&quot;R3&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="co">// 範例： ++ X 改為 LDI R1, 1; LD R2, X; ADD R2, R1, R2; ST R2, X; </span>
+    <span class="kw">case</span> <span class="st">&quot;++&quot;</span>: <span class="kw">case</span> <span class="st">&quot;--&quot;</span>:
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;LDI&quot;</span>, <span class="st">&quot;R1&quot;</span>, <span class="st">&quot;1&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;LD&quot;</span>,  <span class="st">&quot;R2&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    aop = {<span class="st">&quot;++&quot;</span>:<span class="st">&quot;ADD&quot;</span>, <span class="st">&quot;--&quot;</span>:<span class="st">&quot;SUB&quot;</span> }[iop];
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, aop, <span class="st">&quot;R2&quot;</span>, <span class="st">&quot;R1&quot;</span>, <span class="st">&quot;R2&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;ST&quot;</span>,  <span class="st">&quot;R2&quot;</span>, p[<span class="dv">0</span>]);
+    <span class="kw">break</span>;
+    <span class="co">// 範例： &lt; X, A, B 改為 LD R1, A; LD R2, B; CMP R1, R2; JLT CSET0; LDI R1, 1; JMP EXIT0; CSET0: LDI R1, 0; CEXIT0: ST R1, X</span>
+    <span class="kw">case</span> <span class="st">&quot;&lt;&quot;</span>: <span class="kw">case</span> <span class="st">&quot;&lt;=&quot;</span>: <span class="kw">case</span> <span class="st">&quot;&gt;&quot;</span>: <span class="kw">case</span> <span class="st">&quot;&gt;=&quot;</span>: <span class="kw">case</span> <span class="st">&quot;==&quot;</span>: <span class="kw">case</span> <span class="st">&quot;!=&quot;</span>: 
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">1</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R2&quot;</span>, p[<span class="dv">2</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;CMP&quot;</span>, <span class="st">&quot;R1&quot;</span>, <span class="st">&quot;R2&quot;</span>, <span class="st">&quot;&quot;</span>);
+    aop = {<span class="st">&quot;&lt;&quot;</span>:<span class="st">&quot;JLT&quot;</span>, <span class="st">&quot;&lt;=&quot;</span>:<span class="st">&quot;JLE&quot;</span>, <span class="st">&quot;&gt;&quot;</span>:<span class="st">&quot;JGT&quot;</span>, <span class="st">&quot;&gt;=&quot;</span>:<span class="st">&quot;JGE&quot;</span>, <span class="st">&quot;==&quot;</span>:<span class="st">&quot;JEQ&quot;</span>, <span class="st">&quot;!=&quot;</span>:<span class="st">&quot;JNE&quot;</span>}[iop];
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, aop, <span class="st">&quot;CSET&quot;</span>+cmpCounter, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;LDI&quot;</span>, <span class="st">&quot;R1&quot;</span>, <span class="st">&quot;1&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;JMP&quot;</span>, <span class="st">&quot;CEXIT&quot;</span>+cmpCounter, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;CSET&quot;</span>+cmpCount, <span class="st">&quot;LDI&quot;</span>, <span class="st">&quot;R1&quot;</span>, <span class="st">&quot;0&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;CEXIT&quot;</span>+cmpCount, <span class="st">&quot;ST&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="co">// 範例： call X, F 改為 CALL F; ST R1, X;</span>
+    <span class="kw">case</span> <span class="st">&quot;call&quot;</span>:
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;CALL&quot;</span>, p[<span class="dv">1</span>], <span class="st">&quot;&quot;</span>,   <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;ST&quot;</span>,   <span class="st">&quot;R1&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="co">// 範例： arg X 改為 LD R1, X; PUSH R1;</span>
+    <span class="kw">case</span> <span class="st">&quot;arg&quot;</span>:
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;LD&quot;</span>,  <span class="st">&quot;R1&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;PUSH&quot;</span>,<span class="st">&quot;R1&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;function&quot;</span>: <span class="co">// 範例： sum function 只生成標記 sum，沒有生成組合語言指令</span>
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;endf&quot;</span>: <span class="co">// 函數結束，沒有生成組合語言指令</span>
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;param&quot;</span>: <span class="co">// 範例： param X 改為 POP R1; ST R1, X; </span>
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;POP&quot;</span>, <span class="st">&quot;R1&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;ST&quot;</span>,  <span class="st">&quot;R1&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;return&quot;</span>:  <span class="co">// 範例： return X 改為 LD R1, X; RET;</span>
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;LD&quot;</span>,<span class="st">&quot;R1&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;RET&quot;</span>,<span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;if0&quot;</span>:  <span class="co">// 範例： if0 X Label 改為 CMP R0, X; JEQ Label;</span>
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;CMP&quot;</span>,<span class="st">&quot;R0&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;JEQ&quot;</span>,p[<span class="dv">1</span>], <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;goto&quot;</span>:  <span class="co">// 範例： goto Label 改為 JMP label</span>
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;JMP&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;array&quot;</span>:  <span class="co">// 範例： X array 改為 LD R1, X; CALL ARRAY; (註： X=new array())</span>
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;CALL&quot;</span>, <span class="st">&quot;ARRAY&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;[]&quot;</span>:  <span class="co">// 範例： [] X A i  改為 LD R1, A; LD R2, i; CALL AGET; ST R1, X (註： X=A[i])</span>
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">1</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R2&quot;</span>, p[<span class="dv">2</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;CALL&quot;</span>, <span class="st">&quot;AGET&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;ST&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;length&quot;</span>: <span class="co">// 範例： length len, A 改為 LD R1, A; CALL ALEN; ST R1, len;</span>
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">1</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;CALL&quot;</span>, <span class="st">&quot;ALEN&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;ST&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;apush&quot;</span>: <span class="co">// 範例： apush A, X 改為 LD R1,A; LD R2, X; CALL APUSH</span>
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R2&quot;</span>, p[<span class="dv">1</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;CALL&quot;</span>, <span class="st">&quot;APUSH&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;table&quot;</span>: <span class="co">// 範例： table T 改為 LD R1,T; CALL TABLE</span>
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;CALL&quot;</span>, <span class="st">&quot;TABLE&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;map&quot;</span>: <span class="co">// 範例： map table field value 改為 LD R1, table; LD R2, field; LD R3, value; CALL TMAP</span>
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R1&quot;</span>, p[<span class="dv">0</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R2&quot;</span>, p[<span class="dv">1</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;LD&quot;</span>, <span class="st">&quot;R3&quot;</span>, p[<span class="dv">2</span>], <span class="st">&quot;&quot;</span>);
+    <span class="fu">asm</span>(<span class="st">&quot;&quot;</span>,  <span class="st">&quot;CALL&quot;</span>, <span class="st">&quot;TMAP&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="st">&quot;&quot;</span>);
+    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="st">&quot;&quot;</span>:
+    <span class="kw">break</span>;
+    <span class="kw">default</span>: 
+      <span class="fu">log</span>(<span class="st">&quot;Error : %s not found!&quot;</span>, iop);
+  }
+}
+
+<span class="co">// 將所有中間碼都轉換為組合語言</span>
+<span class="kw">for</span> (<span class="kw">var</span> i <span class="kw">in</span> lines) {
+  <span class="kw">if</span> (lines[i].<span class="fu">trim</span>().<span class="fu">length</span> &gt; <span class="dv">0</span>) {
+    <span class="fu">log</span>(<span class="st">&quot;// %s&quot;</span>, lines[i]);
+    <span class="fu">ir2as</span>(lines[i]);
+  }
+}</code></pre>
+<h3 id="執行結果-1"><a href="#執行結果-1">執行結果</a></h3>
+<p>首先我們要使用 j0c 編譯器將 j0 語言的程式，編譯為 ir0 的中間碼格式。然後再利用 ir2as0 將中間碼轉換成 CPU0 的組合語言，以下是一個將 test.j0 編譯 test.ir0 中間檔，然後再利用 ir2as0 將中間檔轉換為 test.as0 組合語言的過程。</p>
+<pre><code>C:\Dropbox\Public\web\oc\code\js&gt;node j0c test.j0 &gt; test.ir0
+
+C:\Dropbox\Public\web\oc\code\js&gt;node ir2as0 test.ir0 &gt; test.as0</code></pre>
+<p>以下是 test.j0 =&gt; test.ir0 =&gt; test.as0 這個編譯轉換過程當中的檔案內容。</p>
+<p>高階語言檔： test.j0</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript">s = <span class="fu">sum</span>(<span class="dv">10</span>);
+
+<span class="kw">function</span> <span class="fu">sum</span>(n) {
+  s = <span class="dv">0</span>;
+  i=<span class="dv">1</span>;
+  <span class="kw">while</span> (i&lt;=<span class="dv">10</span>) {
+    s = s + i;
+    i++;
+  }
+  <span class="kw">return</span> s;
+}
+
+m = <span class="fu">max</span>(<span class="dv">3</span>,<span class="dv">5</span>);
+
+<span class="kw">function</span> <span class="fu">max</span>(a, b) {
+  <span class="kw">if</span> (a &gt; b)
+    <span class="kw">return</span> a;
+  <span class="kw">else</span>
+    <span class="kw">return</span> b;
+}
+
+<span class="kw">function</span> <span class="fu">total</span>(a) {
+  s = <span class="dv">0</span>;
+  <span class="kw">for</span> (i <span class="kw">in</span> a) {
+    s = s + a[i];
+  }
+  <span class="kw">return</span> s;
+}
+
+a = [ <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">7</span>, <span class="dv">2</span>, <span class="dv">6</span>];
+t = <span class="fu">total</span>(a);
+word = { <span class="dt">e</span>:<span class="st">&quot;dog&quot;</span>, <span class="dt">c</span>:<span class="st">&quot;狗&quot;</span> };</code></pre>
+<p>中間碼檔案： test.ir0</p>
+<pre><code>    arg 10      
+    call    T1  sum 
+    =   s   T1  
+sum function            
+    param   n       
+    =   s   0   
+    =   i   1   
+L1              
+    &lt;=  T2  i   10
+    if0 T2  L2  
+    +   T3  s   i
+    =   s   T3  
+    ++  i       
+    goto    L1      
+L2              
+    return  s       
+    endf            
+    arg 3       
+    arg 5       
+    call    T4  max 
+    =   m   T4  
+max function            
+    param   a       
+    param   b       
+    &gt;   T5  a   b
+    if0 T5  L3  
+    return  a       
+L3              
+    return  b       
+    endf            
+total   function            
+    param   a       
+    =   s   0   
+    =   i   0   
+L4  length  T6  a   
+    &lt;   T7  i   T6
+    if0 T7  L5  
+    []  T8  a   i
+    +   T9  s   T8
+    =   s   T9  
+    goto    L4      
+L5              
+    return  s       
+    endf            
+    array   T10     
+    apush   T10 1   
+    apush   T10 3   
+    apush   T10 7   
+    apush   T10 2   
+    apush   T10 6   
+    =   a   T10 
+    arg a       
+    call    T11 total   
+    =   t   T11 
+    table   T12     
+    map T12 e   &quot;dog&quot;
+    map T12 c   &quot;狗&quot;
+    =   word    T12 </code></pre>
+<p>組合語言檔： test.as0</p>
+<pre><code>//  arg 10      
+    LD  R1  10  
+    PUSH    R1      
+//  call    T1  sum 
+    CALL    sum     
+    ST  R1  T1  
+//  =   s   T1  
+    LD  R1  T1  
+    ST  R1  s   
+// sum  function            
+sum             
+//  param   n       
+    POP R1      
+    ST  R1  n   
+//  =   s   0   
+    LD  R1  0   
+    ST  R1  s   
+//  =   i   1   
+    LD  R1  1   
+    ST  R1  i   
+// L1               
+L1              
+//  &lt;=  T2  i   10
+    LD  R1  i   
+    LD  R2  10  
+    CMP R1  R2  
+    JLE CSET0       
+    LDI R1  1   
+    JMP CEXIT0      
+CSET0   LDI R1  0   
+CEXIT0  ST  R1  T2  
+//  if0 T2  L2  
+    CMP R0  T2  
+    JEQ L2      
+//  +   T3  s   i
+    LD  R1  s   
+    LD  R2  i   
+    ADD R3  R1  R2
+    ST  R3  T3  
+//  =   s   T3  
+    LD  R1  T3  
+    ST  R1  s   
+//  ++  i       
+    LDI R1  1   
+    LD  R2  i   
+    ADD R2  R1  R2
+    ST  R2  i   undefined
+//  goto    L1      
+    JMP L1      
+// L2               
+L2              
+//  return  s       
+    LD  R1  s   
+    RET         
+//  endf            
+//  arg 3       
+    LD  R1  3   
+    PUSH    R1      
+//  arg 5       
+    LD  R1  5   
+    PUSH    R1      
+//  call    T4  max 
+    CALL    max     
+    ST  R1  T4  
+//  =   m   T4  
+    LD  R1  T4  
+    ST  R1  m   
+// max  function            
+max             
+//  param   a       
+    POP R1      
+    ST  R1  a   
+//  param   b       
+    POP R1      
+    ST  R1  b   
+//  &gt;   T5  a   b
+    LD  R1  a   
+    LD  R2  b   
+    CMP R1  R2  
+    JGT CSET0       
+    LDI R1  1   
+    JMP CEXIT0      
+CSET0   LDI R1  0   
+CEXIT0  ST  R1  T5  
+//  if0 T5  L3  
+    CMP R0  T5  
+    JEQ L3      
+//  return  a       
+    LD  R1  a   
+    RET         
+// L3               
+L3              
+//  return  b       
+    LD  R1  b   
+    RET         
+//  endf            
+// total    function            
+total               
+//  param   a       
+    POP R1      
+    ST  R1  a   
+//  =   s   0   
+    LD  R1  0   
+    ST  R1  s   
+//  =   i   0   
+    LD  R1  0   
+    ST  R1  i   
+// L4   length  T6  a   
+L4              
+    LD  R1  a   
+    CALL    ALEN        
+    ST  R1  T6  
+//  &lt;   T7  i   T6
+    LD  R1  i   
+    LD  R2  T6  
+    CMP R1  R2  
+    JLT CSET0       
+    LDI R1  1   
+    JMP CEXIT0      
+CSET0   LDI R1  0   
+CEXIT0  ST  R1  T7  
+//  if0 T7  L5  
+    CMP R0  T7  
+    JEQ L5      
+//  []  T8  a   i
+    LD  R1  a   
+    LD  R2  i   
+    CALL    AGET        
+    ST  R1  T8  
+//  +   T9  s   T8
+    LD  R1  s   
+    LD  R2  T8  
+    ADD R3  R1  R2
+    ST  R3  T9  
+//  =   s   T9  
+    LD  R1  T9  
+    ST  R1  s   
+//  goto    L4      
+    JMP L4      
+// L5               
+L5              
+//  return  s       
+    LD  R1  s   
+    RET         
+//  endf            
+//  array   T10     
+    LD  R1  T10 
+    CALL    ARRAY       
+//  apush   T10 1   
+    LD  R1  T10 
+    LD  R2  1   
+    CALL    APUSH       
+//  apush   T10 3   
+    LD  R1  T10 
+    LD  R2  3   
+    CALL    APUSH       
+//  apush   T10 7   
+    LD  R1  T10 
+    LD  R2  7   
+    CALL    APUSH       
+//  apush   T10 2   
+    LD  R1  T10 
+    LD  R2  2   
+    CALL    APUSH       
+//  apush   T10 6   
+    LD  R1  T10 
+    LD  R2  6   
+    CALL    APUSH       
+//  =   a   T10 
+    LD  R1  T10 
+    ST  R1  a   
+//  arg a       
+    LD  R1  a   
+    PUSH    R1      
+//  call    T11 total   
+    CALL    total       
+    ST  R1  T11 
+//  =   t   T11 
+    LD  R1  T11 
+    ST  R1  t   
+//  table   T12     
+    LD  R1  T12 
+    CALL    TABLE       
+//  map T12 e   &quot;dog&quot;
+    LD  R1  T12 
+    LD  R2  e   
+    LD  R3  &quot;dog&quot;   
+    CALL    TMAP        
+//  map T12 c   &quot;狗&quot;
+    LD  R1  T12 
+    LD  R2  c   
+    LD  R3  &quot;狗&quot; 
+    CALL    TMAP        
+//  =   word    T12 
+    LD  R1  T12 
+    ST  R1  word    </code></pre>
+<h3 id="結語-3"><a href="#結語-3">結語</a></h3>
+<p>截至目前為止，我們已經為開放電腦計畫實作了一組簡單的工具鏈，包含用 node.js + javascript 設計的 j0c 編譯器、ir2as0 中間碼轉換器、 as0 組譯器、vm0 虛擬機、以及用 Verilog 設計的 CPU0, MCU0 處理器等等。</p>
+<p>這套工具鏈的設計都是以「簡單易懂」為原則，採用 Keep It Simple and Stupid (KISS) 的原則，希望能透過這樣的方式，揭露電腦的各個設計層面，讓讀者可以透過開放電腦計畫理解電腦從軟體到硬體的設計原理。</p>
+<p>不過、我們還沒有完成整個計畫，開放電腦計畫顯然還有些缺憾，像是我們還沒有設計作業系統 (OS)，也沒有用 Verilog 設計開放電腦的週邊裝置電路，另外在 FPGA 實際燒錄也只有很簡單的範例程式，還沒辦法形成一套從軟體到硬體串接的很完整的系統。</p>
+<p>因此、我們打算在 2014 年暑假在成大與蘇文鈺老師一起舉辦一個「開放FPGA電腦創世紀黑客松」，我們已經為這個活動建立了一個 facebook 社團，歡迎對「開放電腦計畫」或 FPGA 有興趣的朋友們，一起來參與這個活動，以下是該社團的網址：</p>
+<ul>
+<li><a href="https://www.facebook.com/groups/OpenFPGAComputerPhone/">https://www.facebook.com/groups/OpenFPGAComputerPhone/</a></li>
+</ul>
+<p>歡迎大家一同來參加！</p>
+<h1 id="結語-4"><a href="#結語-4">結語</a></h1>
+<p>在本書當中，我們用 JavaScript 實作了「虛擬機、組譯器、編譯器」等工具，形成了一套工具鏈，說明了「系統軟體」的設計原理。</p>
+<p>但可惜的是、筆者對作業系統設計的理解還不夠深入，因此尚未設計出簡易的作業系統，這個任務只好留待下一版再來完成了。</p>
+</div>
+<div id="footer">
+<a href="http://ccckmit.wikidot.com">陳鍾誠</a>衍生自<a href="http://zh.wikipedia.org/">維基百科</a>之作品：採用 <a href="http://creativecommons.org/licenses/by-sa/3.0/tw/ ">創作共用：姓名標示、相同方式分享</a> <a href="license.html">授權</a>
+</div>
+</body>
+</html>

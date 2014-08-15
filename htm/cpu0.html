@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="../css/book.css" type="text/css" />
+</head>
+<body>
+<div id="header_wrap">
+  <h1><a href="book.htm">開放電腦計畫 -- 系統程式</a><BR/><sub>(使用 JavaScript 實作)</sub></h1>
+  <table id="bar" border="0" style="border:0;"><tr style="border:0;">
+    <td style="text-align:left;border:0;"> <a href="book.html">目錄</a> | <a href="download.html">下載</a></td>
+    <td style="text-align:right;border:0;"><a href="http://ccckmit.wikidot.com/">陳鍾誠</a> 於 <a href="http://www.nqu.edu.tw/">金門大學</a></td>
+  </tr></table>
+</div>
+<div id="content">
+<div id="TOC">
+<ul>
+<li><a href="#cpu0-處理器">CPU0 處理器</a></li>
+</ul>
+</div>
+<h1 id="cpu0-處理器"><a href="#cpu0-處理器">CPU0 處理器</a></h1>
+<p>商用的處理器通常因為強調效能的原因，其設計都會讓指令格式變得難懂且複雜。</p>
+<p>為了讓處理器變得更簡單，更容易理解，我們設計了 CPU0 處理器，這個處理計的設計原則是 KISS，也就是 Keep It Simple and Stupid。</p>
+<p>CPU0 的設計不求速度，只求清楚易懂，因此在指令級與指令格式上都盡量簡單，編碼都以 4 位元為單位，因此也很容易可以用人腦將組合語言翻成機器碼。</p>
+<p>以下是一個 CPU0 的組合語言範例，該程式所作的事情是計算 1+2+...+10 的結果，最後應該會得到總和為 55。</p>
+<p>檔案：sum.as0</p>
+<pre><code>        LD     R1, sum      ; R1 = sum = 0
+        LD     R2, i        ; R2 = i = 1
+        LDI    R3, 10       ; R3 = 10
+FOR:    CMP    R2, R3       ; if (R2 &gt; R3)
+        JGT    EXIT         ;   goto EXIT
+        ADD    R1, R1, R2   ; R1 = R1 + R2 (sum = sum + i)
+        ADDI   R2, R2, 1    ; R2 = R2 + 1  ( i  = i + 1)
+        JMP    FOR          ; goto FOR
+EXIT:   ST     R1, sum      ; sum = R1
+        ST     R2, i        ; i = R2
+        LD     R9, msgptr   ; R9= pointer(msg) = &amp;msg
+        SWI    3            ; SWI 3 : 印出 R9 (=&amp;msg) 中的字串
+        MOV    R9, R1       ; R9 = R1 = sum
+        SWI    4            ; SWI 4 : 印出 R9 (=R1=sum) 中的整數
+        RET                 ; return 返回上一層呼叫函數
+i:      RESW   1            ; int i
+sum:    WORD   0            ; int sum=0
+msg:    BYTE   &quot;1+...+10=&quot;, 0   ; char *msg = &quot;sum=&quot;
+msgptr: WORD   msg          ; char &amp;msgptr = &amp;msg</code></pre>
+</div>
+<div id="footer">
+<a href="http://ccckmit.wikidot.com">陳鍾誠</a>衍生自<a href="http://zh.wikipedia.org/">維基百科</a>之作品：採用 <a href="http://creativecommons.org/licenses/by-sa/3.0/tw/ ">創作共用：姓名標示、相同方式分享</a> <a href="license.html">授權</a>
+</div>
+</body>
+</html>
